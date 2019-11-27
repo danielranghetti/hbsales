@@ -1,10 +1,23 @@
 package br.com.hbsis.fornecedor;
 
+
+
+
+
+
+
+
+import br.com.hbsis.categoria.Categoria;
+
 import javax.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "seg_fornecedores")
-class Fornecedor {
+ public class Fornecedor{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +34,13 @@ class Fornecedor {
     private String telefone;
     @Column(name = "e_mail", nullable = false, length = 255)
     private String eMail;
+    @OneToMany(cascade =CascadeType.ALL,mappedBy = "fornecedor")
 
+    private List<Categoria> categorias = new ArrayList<Categoria>();
+
+    public List<Categoria> getCategorias() { return categorias; }
+
+    public void setCategorias(List<Categoria> categorias) { this.categorias = categorias; }
 
     public Long getId() {
         return id;
@@ -79,12 +98,13 @@ class Fornecedor {
     public String toString() {
         return "Fornecedor{" +
                 "id=" + id +
-                ", razao_social='" + razaoSocial + '\'' +
-                ", cnpj=" + cnpj +
-                ", nome_fantasia='" + nomeFantasia + '\'' +
+                ", razaoSocial='" + razaoSocial + '\'' +
+                ", cnpj='" + cnpj + '\'' +
+                ", nomeFantasia='" + nomeFantasia + '\'' +
                 ", endereco='" + endereco + '\'' +
-                ", telefone=" + telefone +
-                ", e_mail='" + eMail + '\'' +
+                ", telefone='" + telefone + '\'' +
+                ", eMail='" + eMail + '\'' +
+                ", categorias=" + categorias +
                 '}';
     }
 }

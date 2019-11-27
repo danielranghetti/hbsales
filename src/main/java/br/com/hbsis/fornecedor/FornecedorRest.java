@@ -26,6 +26,7 @@ public class FornecedorRest {
 
         return this.fornecedorService.save(fornecedorDTO);
     }
+
     @GetMapping("/{id}")
     public FornecedorDTO find(@PathVariable("id") Long id) {
 

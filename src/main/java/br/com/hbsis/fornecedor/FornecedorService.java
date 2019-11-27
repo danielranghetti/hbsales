@@ -28,6 +28,7 @@ public class FornecedorService {
         LOGGER.debug("Fornecedor: {}", fornecedorDTO);
 
         Fornecedor fornecedor = new Fornecedor();
+
         fornecedor.setRazaoSocial(fornecedorDTO.getRazaoSocial());
         fornecedor.setCnpj(fornecedorDTO.getCnpj());
         fornecedor.setNomeFantasia(fornecedorDTO.getNomeFantasia());
@@ -44,6 +45,7 @@ public class FornecedorService {
         if (fornecedorDTO==null){
             throw new IllegalArgumentException("FornecedorDTO não deve ser nulo");
         }
+
             if (StringUtils.isEmpty(fornecedorDTO.getRazaoSocial())) {
                 throw new IllegalArgumentException("Razão Social não deve ser nula/vazia");
             }
@@ -60,7 +62,7 @@ public class FornecedorService {
                 throw  new  IllegalArgumentException("Telefone não deve ser nulo/vazio");
             }
             if (StringUtils.isEmpty(fornecedorDTO.geteMail())){
-                throw  new IllegalArgumentException("E-mail não deve ser nulo/vazio");
+                 throw  new IllegalArgumentException("E-mail não deve ser nulo/vazio");
             }
 
         }
@@ -73,15 +75,26 @@ public class FornecedorService {
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
+    public Fornecedor findByFornecedorId(Long id) {
+        Optional<Fornecedor> fornecedorOptional = this.iFornecedorRepository.findById(id);
+
+        if (fornecedorOptional.isPresent()) {
+            return fornecedorOptional.get();
+        }
+
+        throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
+
     public FornecedorDTO update(FornecedorDTO fornecedorDTO, Long id) {
-        Optional<Fornecedor> usuarioExistenteOptional = this.iFornecedorRepository.findById(id);
+        Optional<Fornecedor> fornecedorExistenteOptional = this.iFornecedorRepository.findById(id);
 
-        if (usuarioExistenteOptional.isPresent()) {
-            Fornecedor fornecedorExistente = usuarioExistenteOptional.get();
+        if (fornecedorExistenteOptional.isPresent()) {
+            Fornecedor fornecedorExistente = fornecedorExistenteOptional.get();
 
-            LOGGER.info("Atualizando usuário... id: [{}]", fornecedorExistente.getId());
+            LOGGER.info("Atualizando fornecedor... id: [{}]", fornecedorExistente.getId());
             LOGGER.debug("Payload: {}", fornecedorDTO);
-            LOGGER.debug("Usuario Existente: {}", fornecedorExistente);
+            LOGGER.debug("Fornecedor Existente: {}", fornecedorExistente);
+
 
             fornecedorExistente.setRazaoSocial(fornecedorDTO.getRazaoSocial());
             fornecedorExistente.setCnpj(fornecedorDTO.getCnpj());

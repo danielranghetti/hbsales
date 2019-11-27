@@ -14,6 +14,7 @@ public class FornecedorDTO {
 
     public FornecedorDTO(Long id, String razaoSocial, String cnpj, String nomeFantasia, String endereco, String telefone, String eMail) {
         this.id = id;
+
         this.razaoSocial = razaoSocial;
         this.cnpj = cnpj;
         this.nomeFantasia = nomeFantasia;
@@ -86,16 +87,18 @@ public class FornecedorDTO {
         this.eMail = eMail;
     }
 
+
+
     @Override
     public String toString() {
         return "FornecedorDTO{" +
                 "id=" + id +
-                ", razao_social='" + razaoSocial + '\'' +
-                ", cnpj=" + cnpj +
-                ", nome_fantasia='" + nomeFantasia + '\'' +
+                ", razaoSocial='" + razaoSocial + '\'' +
+                ", cnpj='" + cnpj + '\'' +
+                ", nomeFantasia='" + nomeFantasia + '\'' +
                 ", endereco='" + endereco + '\'' +
-                ", telefone=" + telefone +
-                ", e_mail='" + eMail + '\'' +
+                ", telefone='" + telefone + '\'' +
+                ", eMail='" + eMail + '\'' +
                 '}';
     }
 }
