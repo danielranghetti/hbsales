@@ -16,9 +16,9 @@ public class FornecedorService {
     private final IFornecedorRepository iFornecedorRepository;
 
     public FornecedorService(IFornecedorRepository iFornecedorRepository) {
+
         this.iFornecedorRepository = iFornecedorRepository;
     }
-
 
     public FornecedorDTO save(FornecedorDTO fornecedorDTO) {
 

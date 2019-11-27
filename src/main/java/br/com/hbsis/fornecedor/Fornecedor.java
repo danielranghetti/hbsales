@@ -42,6 +42,10 @@ import java.util.List;
 
     public void setCategorias(List<Categoria> categorias) { this.categorias = categorias; }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }
