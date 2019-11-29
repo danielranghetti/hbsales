@@ -1,18 +1,16 @@
 package br.com.hbsis.categoria;
 
 
-import com.opencsv.CSVWriter;
-import com.opencsv.CSVWriterBuilder;
-import com.opencsv.ICSVWriter;
+import com.opencsv.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
-
 
 @RestController
 @RequestMapping("/categorias")
@@ -24,6 +22,12 @@ public class CategoriaRest {
     @Autowired
     public CategoriaRest(CategoriaService categoriaService){this.categoriaService = categoriaService;}
 
+    @PostMapping("/importa-csv-categorias")
+    public void importCSV(@RequestParam("file") MultipartFile file) throws Exception {
+        categoriaService.saveAll(categoriaService.readAll(file));
+
+
+    }
     @PostMapping
     public CategoriaDTO save(@RequestBody CategoriaDTO categoriaDTO) {
         LOGGER.info("Recebendo solicitação de persistência de categoria...");
@@ -33,30 +37,9 @@ public class CategoriaRest {
     }
 
     @GetMapping("/exporta-csv-categorias")
-    public void exportCSV(HttpServletResponse response) throws Exception {
-
-        String nomeArquivo = "categorias.csv";
-        response.setContentType("text/csv");
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + nomeArquivo + "\"");
-        PrintWriter Writer = response.getWriter();
-
-        ICSVWriter csvWriter = new CSVWriterBuilder(Writer)
-                .withSeparator(';')
-                .withEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER)
-                .withLineEnd(CSVWriter.DEFAULT_LINE_END)
-                .build();
-
-        String headerCSV[] = {"id da categoria", "codigo da categoria", "nome da categoria", "id do fornecedor"};
-        csvWriter.writeNext(headerCSV);
-
-        for (Categoria linha : categoriaService.findAll()) {
-            csvWriter.writeNext(new String[] {linha.getId().toString(), linha.getCodigoCategoria().toString(),  linha.getNomeCategoria(), linha.getFornecedor().getId().toString()}
-                    );
-        }
-
+    public void findAll(HttpServletResponse response) throws Exception {
+       categoriaService.findAll(response);
     }
-
 
 
     @GetMapping("/{id}")

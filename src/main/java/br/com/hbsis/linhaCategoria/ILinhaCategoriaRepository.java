@@ -1,8 +1,8 @@
-package br.com.hbsis.fornecedor;
+package br.com.hbsis.linhaCategoria;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-interface IFornecedorRepository extends JpaRepository<Fornecedor, Long> {
+public interface ILinhaCategoriaRepository extends JpaRepository<LinhaCategoria, Long>{
 }

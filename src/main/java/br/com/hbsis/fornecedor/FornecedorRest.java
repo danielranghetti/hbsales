@@ -22,7 +22,7 @@ public class FornecedorRest {
     @PostMapping
     public FornecedorDTO save(@RequestBody FornecedorDTO fornecedorDTO) {
         LOGGER.info("Recebendo solicitação de persistência de usuário...");
-        LOGGER.debug("Payaload: {}", fornecedorDTO);
+        LOGGER.debug("Payload: {}", fornecedorDTO);
 
         return this.fornecedorService.save(fornecedorDTO);
     }
