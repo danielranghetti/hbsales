@@ -5,6 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.swing.*;
 
 @RestController
 @RequestMapping("/linhaCategorias")
@@ -44,6 +48,14 @@ public class LinhaCategoriaRest {
         LOGGER.info("Recebendo Delete para Usuário de ID: {}", id);
 
         this.linhaCategoriaService.delete(id);
+    }
+    @GetMapping("/exporta-csv-linhaCategorias")
+    public void findAll(HttpServletResponse response) throws Exception {
+        linhaCategoriaService.findAll(response);
+    }
+    @PostMapping("/importa-csv-linhaCategorias")
+    public void importCSV(@RequestParam("file")MultipartFile file) throws Exception{
+        linhaCategoriaService.saveAll(linhaCategoriaService.readAll(file));
     }
 
 
