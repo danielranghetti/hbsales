@@ -1,16 +1,14 @@
 package br.com.hbsis.categoria;
 
 
-import com.opencsv.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
+
 
 @RestController
 @RequestMapping("/categorias")
@@ -20,7 +18,9 @@ public class CategoriaRest {
 
 
     @Autowired
-    public CategoriaRest(CategoriaService categoriaService){this.categoriaService = categoriaService;}
+    public CategoriaRest(CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
+    }
 
     @PostMapping("/importa-csv-categorias")
     public void importCSV(@RequestParam("file") MultipartFile file) throws Exception {
@@ -28,6 +28,7 @@ public class CategoriaRest {
 
 
     }
+
     @PostMapping
     public CategoriaDTO save(@RequestBody CategoriaDTO categoriaDTO) {
         LOGGER.info("Recebendo solicitação de persistência de categoria...");
@@ -38,7 +39,7 @@ public class CategoriaRest {
 
     @GetMapping("/exporta-csv-categorias")
     public void findAll(HttpServletResponse response) throws Exception {
-       categoriaService.findAll(response);
+        categoriaService.findAll(response);
     }
 
 
@@ -49,16 +50,18 @@ public class CategoriaRest {
 
         return this.categoriaService.findById(id);
     }
+
     @PutMapping("/{id}")
-    public CategoriaDTO udpate(@PathVariable("id") Long id, @RequestBody CategoriaDTO categoriaDTO){
+    public CategoriaDTO udpate(@PathVariable("id") Long id, @RequestBody CategoriaDTO categoriaDTO) {
         LOGGER.info("Recebendo Update para categoria de ID: {}", id);
         LOGGER.debug("Payload: {}", categoriaDTO);
 
         return this.categoriaService.update(categoriaDTO, id);
     }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") Long id) {
-        LOGGER.info("Recebendo Delete para Usuário de ID: {}", id);
+        LOGGER.info("Recebendo Delete para Categoria de ID: {}", id);
 
         this.categoriaService.delete(id);
     }

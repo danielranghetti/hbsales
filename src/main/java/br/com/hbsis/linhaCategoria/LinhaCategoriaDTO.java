@@ -16,12 +16,12 @@ public class LinhaCategoriaDTO {
         this.nomeLinha = nomeLinha;
     }
 
-    public static LinhaCategoriaDTO of(LinhaCategoria categoria){
+    public static LinhaCategoriaDTO of(LinhaCategoria linhaCategoria){
         return new LinhaCategoriaDTO(
-                categoria.getId(),
-                categoria.getCategoria().getId(),
-                categoria.getCodLinhaCategoria(),
-                categoria.getNomeLinha()
+                linhaCategoria.getId(),
+                linhaCategoria.getCategoria().getId(),
+                linhaCategoria.getCodLinhaCategoria(),
+                linhaCategoria.getNomeLinha()
         );
     }
 
