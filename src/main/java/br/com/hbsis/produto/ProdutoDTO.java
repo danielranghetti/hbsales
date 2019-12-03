@@ -1,8 +1,6 @@
 package br.com.hbsis.produto;
 
-import br.com.hbsis.linhaCategoria.LinhaCategoria;
-
-import java.util.Date;
+import java.time.LocalDate;
 
 public class ProdutoDTO {
 
@@ -12,13 +10,13 @@ public class ProdutoDTO {
     private double preco;
     private int uniCaixa;
     private double pesoUni;
-    private Date validade;
+    private LocalDate validade;
     private Long linhaCategoria;
 
     public ProdutoDTO() {
     }
 
-    public ProdutoDTO(Long id, int codProduto, String nome, double preco, int uniCaixa, double pesoUni, Date validade, Long linhaCategoria) {
+    public ProdutoDTO(Long id, int codProduto, String nome, double preco, int uniCaixa, double pesoUni, LocalDate validade, Long linhaCategoria) {
         this.id = id;
         this.codProduto = codProduto;
         this.nome = nome;
@@ -98,11 +96,11 @@ public class ProdutoDTO {
         this.pesoUni = pesoUni;
     }
 
-    public Date getValidade() {
+    public LocalDate getValidade() {
         return validade;
     }
 
-    public void setValidade(Date validade) {
+    public void setValidade(LocalDate validade) {
         this.validade = validade;
     }
 

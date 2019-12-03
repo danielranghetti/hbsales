@@ -1,11 +1,11 @@
 package br.com.hbsis.produto;
 
-import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.linhaCategoria.LinhaCategoria;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.Optional;
 
 @Entity
 @Table(name = "seg_produtos")
@@ -25,21 +25,25 @@ public class Produto {
     @Column(name = "peso_uni", nullable = false, length = 255)
     private double pesoUni;
     @Column(name = "validade", nullable = false)
-    @JsonFormat(pattern="yyyy-MM-dd")
-    private Date validade;
+    private LocalDate validade;
+
     @ManyToOne
     @JoinColumn(name = "id_linha_categoria", referencedColumnName = "id")
     private LinhaCategoria linhaCategoria;
 
-    public LinhaCategoria getLinhaCategoria() {
-        return linhaCategoria;
+    public LocalDate getValidade() {
+        return validade;
     }
 
     public void setLinhaCategoria(LinhaCategoria linhaCategoria) {
         this.linhaCategoria = linhaCategoria;
     }
 
-    public Long getId() {
+    public LinhaCategoria getLinhaCategoria() {
+        return linhaCategoria;
+    }
+
+     public Long getId() {
         return id;
     }
 
@@ -87,11 +91,11 @@ public class Produto {
         this.pesoUni = pesoUni;
     }
 
-    public Date getValidade() {
+    public LocalDate getValidade(LocalDate parse) {
         return validade;
     }
 
-    public void setValidade(Date validade) {
+    public void setValidade(LocalDate validade) {
         this.validade = validade;
     }
 
@@ -105,7 +109,9 @@ public class Produto {
                 ", uniCaixa=" + uniCaixa +
                 ", pesoUni=" + pesoUni +
                 ", validade=" + validade +
-                ", id_linha_categoria=" + linhaCategoria +
+                ", id_linha_categoria=" + linhaCategoria.toString() +
                 '}';
     }
+
+
 }

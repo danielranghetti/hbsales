@@ -1,9 +1,13 @@
 package br.com.hbsis.produto;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/produtos")
@@ -44,5 +48,13 @@ public class ProdutoRest {
         LOGGER.info("Recebendo delete para Produto de ID: {} ",id);
 
         this.produtoService.delete(id);
+    }
+    @GetMapping("/exporta-csv-produtos")
+    public void findAll(HttpServletResponse response) throws Exception{
+        produtoService.findAll(response);
+    }
+    @PostMapping("/importa-csv-produtos")
+    public void  importCSV(@RequestParam("file")MultipartFile file) throws Exception{
+        produtoService.saveAll(produtoService.reaAll(file));
     }
 }

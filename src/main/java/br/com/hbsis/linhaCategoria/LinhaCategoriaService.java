@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import sun.net.www.http.HttpClient;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStreamReader;
@@ -64,10 +63,10 @@ public class LinhaCategoriaService {
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
     public LinhaCategoria findByLinhaCategoriaId(Long id) {
-        Optional<LinhaCategoria> fornecedorOptional = this.iLinhaCategoriaRepository.findById(id);
+        Optional<LinhaCategoria> linhaCategoriaOptional = this.iLinhaCategoriaRepository.findById(id);
 
-        if (fornecedorOptional.isPresent()) {
-            return fornecedorOptional.get();
+        if (linhaCategoriaOptional.isPresent()) {
+            return linhaCategoriaOptional.get();
         }
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
@@ -164,6 +163,8 @@ public class LinhaCategoriaService {
         }
         return iLinhaCategoriaRepository.saveAll(leitura);
     }
-    }
+
+
+}
 
 
