@@ -111,4 +111,6 @@ import java.util.List;
                 ", categorias=" + categorias +
                 '}';
     }
+
+
 }

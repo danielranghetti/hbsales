@@ -22,11 +22,11 @@ import java.util.Optional;
 @Service
 public class LinhaCategoriaService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(LinhaCategoriaService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LinhaCategoriaService.class);
 
-    private static ILinhaCategoriaRepository iLinhaCategoriaRepository;
-    private static CategoriaService categoriaService;
-    private static FornecedorService fornecedorService;
+    private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
+    private final CategoriaService categoriaService;
+    private final FornecedorService fornecedorService;
 
 
     public LinhaCategoriaService(ILinhaCategoriaRepository iLinhaCategoriaRepository, CategoriaService categoriaService,FornecedorService fornecedorService) {

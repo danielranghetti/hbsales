@@ -1,47 +1,41 @@
 package br.com.hbsis.produto;
 
+import br.com.hbsis.fornecedor.IFornecedorRepository;
 import br.com.hbsis.linhaCategoria.ILinhaCategoriaRepository;
-import br.com.hbsis.linhaCategoria.LinhaCategoria;
-import br.com.hbsis.linhaCategoria.LinhaCategoriaDTO;
 import br.com.hbsis.linhaCategoria.LinhaCategoriaService;
 import com.opencsv.*;
-
-import jdk.internal.util.xml.impl.Input;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static java.time.LocalDate.parse;
 
 
 @Service
 public class ProdutoService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ProdutoService.class);
-    private static ILinhaCategoriaRepository iLinhaCategoriaRepository;
-    private static IProdutoRepository iProdutoRepository;
-    private static LinhaCategoriaService linhaCategoriaService;
-    private static LinhaCategoriaDTO linhaCategoriaDTO;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProdutoService.class);
+    private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
+    private final IProdutoRepository iProdutoRepository;
+    private final LinhaCategoriaService linhaCategoriaService;
+    private final IFornecedorRepository IFornecedorRepository;
 
-    public ProdutoService(IProdutoRepository iProdutoRepository, LinhaCategoriaService linhaCategoriaService, ILinhaCategoriaRepository iLinhaCategoriaRepository) {
+    public ProdutoService(ILinhaCategoriaRepository iLinhaCategoriaRepository, IProdutoRepository iProdutoRepository, LinhaCategoriaService linhaCategoriaService, br.com.hbsis.fornecedor.IFornecedorRepository IFornecedorRepository) {
+        this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
         this.iProdutoRepository = iProdutoRepository;
         this.linhaCategoriaService = linhaCategoriaService;
-        this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
-
+        this.IFornecedorRepository = IFornecedorRepository;
     }
+
 
     public List<Produto> saveAll(List<Produto> produto) throws Exception {
 
@@ -161,17 +155,53 @@ public class ProdutoService {
         return iProdutoRepository.saveAll(resultadoLeitura);
 
     }
+
+    public void importaProdutoPorFornecedor(Long id, MultipartFile file) throws Exception {
+        InputStreamReader inputStreamReader = new InputStreamReader(file.getInputStream());
+        CSVReader csvReader = new CSVReaderBuilder(inputStreamReader)
+                .withSkipLines(1).build();
+
+        List<String[]> linhaString = csvReader.readAll();
+        List<Produto> resultadoLeitura = new ArrayList<>();
+
+        for (String[] linha : linhaString) {
+            try {
+                String[] dados = linha[0].replaceAll("\"", "").split(";");
+
+                Produto produto = new Produto();
+                if (IFornecedorRepository.existsById(id)) {
+                    produto.setId(Long.parseLong(dados[0]));
+                    produto.setCodProduto(Integer.parseInt(dados[2]));
+                    produto.setNome(dados[3]);
+                    produto.setPreco(Double.parseDouble(dados[4]));
+                    produto.setUniCaixa(Integer.parseInt(dados[5]));
+                    produto.setPesoUni(Double.parseDouble(dados[6]));
+                    produto.setValidade(LocalDate.parse(dados[7]));
+                    produto.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaId(Long.parseLong(dados[1])));
+
+                    if  (iProdutoRepository.existsById(produto.getId()) && id.equals(produto.getLinhaCategoria().getCategoria().getFornecedor().getId())) {
+                        produto.setId(iProdutoRepository.findById(produto.getId()).get().getId());
+                        update(ProdutoDTO.of(produto), produto.getId());
+
+
+                        LOGGER.info("Produto {} ...  atualizando.", produto.getId());
+                    } else if (id == produto.getLinhaCategoria().getCategoria().getFornecedor().getId()) {
+                        iProdutoRepository.save(produto);
+
+                        LOGGER.info("Produto {} ... Salvando novo Produto .", produto.getId());
+                    } else {
+
+                        LOGGER.info("Produto {} ... pertence a outro fornecedor.", produto.getId());
+                    }
+
+                }
+
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -57,4 +57,8 @@ public class ProdutoRest {
     public void  importCSV(@RequestParam("file")MultipartFile file) throws Exception{
         produtoService.saveAll(produtoService.reaAll(file));
     }
+    @PutMapping("/importa-produto-fornecefor/{id}")
+    public void importCSVFornecedor(@PathVariable("id") Long id, @RequestParam("file") MultipartFile file ) throws Exception {
+        produtoService.importaProdutoPorFornecedor(id,file);
+    }
 }

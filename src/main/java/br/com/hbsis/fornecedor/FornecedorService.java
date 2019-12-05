@@ -87,6 +87,14 @@ public class FornecedorService {
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
+    public Fornecedor findFornecedorEntityById(Long id){
+
+        Optional<Fornecedor> fornecedor = this.iFornecedorRepository.findById(id);
+        if(fornecedor.isPresent()){
+            return fornecedor.get();
+        }
+        throw new IllegalArgumentException(String.format("Fornecedor ID %s não existe.", id));
+    }
 
     public FornecedorDTO update(FornecedorDTO fornecedorDTO, Long id) {
         Optional<Fornecedor> fornecedorExistenteOptional = this.iFornecedorRepository.findById(id);
