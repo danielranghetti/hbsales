@@ -26,12 +26,13 @@ public class CategoriaService {
     private final ICategoriaRepository iCategoriaRepository;
     private final FornecedorService fornecedorService;
 
-    public CategoriaService(ICategoriaRepository iCategoriaRepository,  FornecedorService fornecedorService) {
+    public CategoriaService(ICategoriaRepository iCategoriaRepository, FornecedorService fornecedorService) {
         this.iCategoriaRepository = iCategoriaRepository;
         this.fornecedorService = fornecedorService;
     }
+
     //faz a exportaçao
-     public void findAll(HttpServletResponse response) throws Exception {
+    public void findAll(HttpServletResponse response) throws Exception {
 
         String nomeArquivo = "categorias.csv";
         response.setContentType("text/csv");
@@ -49,12 +50,11 @@ public class CategoriaService {
         csvWriter.writeNext(headerCSV);
 
         for (Categoria linha : iCategoriaRepository.findAll()) {
-            csvWriter.writeNext(new String[] {linha.getId().toString(), linha.getCodigoCategoria().toString(),  linha.getNomeCategoria(), linha.getFornecedor().getId().toString()}
+            csvWriter.writeNext(new String[]{linha.getId().toString(), linha.getCodigoCategoria().toString(), linha.getNomeCategoria(), linha.getFornecedor().getId().toString()}
             );
         }
 
     }
-
 
 
     //faz a importação
@@ -78,9 +78,8 @@ public class CategoriaService {
                 FornecedorDTO fornecedorDTO = new FornecedorDTO();
 
 
-
                 categoria.setId(Long.parseLong(resultado[0]));
-                categoria.setCodigoCategoria(Long.parseLong(resultado[1]));
+                categoria.setCodigoCategoria((resultado[1]));
                 categoria.setNomeCategoria(resultado[2]);
                 fornecedorDTO = fornecedorService.findById(Long.parseLong(resultado[3]));
 
@@ -104,7 +103,6 @@ public class CategoriaService {
     }
 
 
-
     public List<Categoria> saveAll(List<Categoria> categoria) throws Exception {
 
         return iCategoriaRepository.saveAll(categoria);
@@ -118,12 +116,27 @@ public class CategoriaService {
         LOGGER.debug("Categoria: {}", categoriaDTO);
 
         Categoria categoria = new Categoria();
-        categoria.setCodigoCategoria(categoriaDTO.getCodigoCategoria());
+
+        String incial = "CAT";
+
         categoria.setFornecedor(fornecedorService.findByFornecedorId(categoriaDTO.getFornecedor()));
+        String cnpj = categoria.getFornecedor().getCnpj();
+        String ultDig = cnpj.substring(cnpj.length() - 4);
+
+        String codigo = categoriaDTO.getCodigoCategoria();
+        String codigoComZero = codigoValidar(codigo);
+
+        categoria.setCodigoCategoria(incial + ultDig + codigoComZero);
         categoria.setNomeCategoria(categoriaDTO.getNomeCategoria());
 
         categoria = this.iCategoriaRepository.save(categoria);
         return CategoriaDTO.of(categoria);
+    }
+
+
+    public String codigoValidar (String codigo){
+        String codigoProcessador = StringUtils.leftPad(codigo, 3, "0");
+        return codigoProcessador;
     }
 
     private void validate(CategoriaDTO categoriaDTO) {
@@ -137,7 +150,7 @@ public class CategoriaService {
         if (StringUtils.isEmpty(categoriaDTO.getNomeCategoria())) {
             throw new IllegalArgumentException("Nome categoria não deve ser nulo");
         }
-        if (StringUtils.isEmpty(Long.toString(categoriaDTO.getCodigoCategoria()))) {
+        if (StringUtils.isEmpty(categoriaDTO.getCodigoCategoria())) {
             throw new IllegalArgumentException("Codigo categoria não deve ser nulo");
         }
     }
@@ -151,11 +164,12 @@ public class CategoriaService {
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
-    public Categoria findByCategoriaId (Long id){
+
+    public Categoria findByCategoriaId(Long id) {
         Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findById(id);
 
-        if (categoriaOptional.isPresent()){
-            return  categoriaOptional.get();
+        if (categoriaOptional.isPresent()) {
+            return categoriaOptional.get();
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }

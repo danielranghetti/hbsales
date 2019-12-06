@@ -150,5 +150,10 @@ public class FornecedorService {
 
         this.iFornecedorRepository.deleteById(id);
     }
+    String codCat;
+    public String ultimosDigCnpj(FornecedorDTO fornecedorDTO){
+        fornecedorDTO.getCnpj().substring(fornecedorDTO.getCnpj().length()-4);
+        return codCat;
+    }
 }
 

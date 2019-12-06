@@ -2,27 +2,26 @@ package br.com.hbsis.categoria;
 
 public class CategoriaDTO {
 
-    private  Long id;
-    private Long codigoCategoria;
+    private Long id;
+    private String codigoCategoria;
     private Long fornecedor;
     private String nomeCategoria;
 
     public CategoriaDTO() {
     }
 
-    public CategoriaDTO(Long id, Long codigoCategoria, Long fornecedor, String nomeCategoria) {
+    public CategoriaDTO(Long id, String codigoCategoria, Long fornecedor, String nomeCategoria) {
         this.id = id;
         this.codigoCategoria = codigoCategoria;
         this.fornecedor = fornecedor;
         this.nomeCategoria = nomeCategoria;
     }
 
-
-    public static CategoriaDTO of(Categoria categoria){
+    public static CategoriaDTO of(Categoria categoria) {
         return new CategoriaDTO(
                 categoria.getId(),
-                categoria.getFornecedor().getId(),
                 categoria.getCodigoCategoria(),
+                categoria.getFornecedor().getId(),
                 categoria.getNomeCategoria()
         );
     }
@@ -35,11 +34,11 @@ public class CategoriaDTO {
         return id;
     }
 
-    public Long getCodigoCategoria() {
+    public String getCodigoCategoria() {
         return codigoCategoria;
     }
 
-    public void setCodigoCategoria(Long codigoCategoria) {
+    public void setCodigoCategoria(String codigoCategoria) {
         this.codigoCategoria = codigoCategoria;
     }
 
