@@ -22,17 +22,17 @@ import java.util.List;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "razao_social", unique = true, nullable = false, length = 255)
+    @Column(name = "razao_social", unique = true, nullable = false, length = 100)
     private String razaoSocial;
-    @Column(name = "cnpj", unique = true, nullable = false, length = 25)
+    @Column(name = "cnpj", unique = true, nullable = false, length = 14)
     private String cnpj;
-    @Column(name = "nome_fantasia", nullable = false, length = 255)
+    @Column(name = "nome_fantasia", nullable = false, length = 100)
     private String nomeFantasia;
-    @Column(name = "endereco", nullable = false, length = 255)
+    @Column(name = "endereco", nullable = false, length = 100)
     private String endereco;
-    @Column(name = "telefone", unique = true, nullable = false, length = 255)
+    @Column(name = "telefone", unique = true, nullable = false, length = 12)
     private String telefone;
-    @Column(name = "e_mail", nullable = false, length = 255)
+    @Column(name = "e_mail", nullable = false, length = 50)
     private String eMail;
     @OneToMany(cascade =CascadeType.ALL,mappedBy = "fornecedor")
 

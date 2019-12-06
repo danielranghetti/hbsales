@@ -41,7 +41,9 @@ public class FornecedorService {
         return FornecedorDTO.of(fornecedor);
     }
 
-    private void validate(FornecedorDTO fornecedorDTO) {
+
+
+    private boolean validate(FornecedorDTO fornecedorDTO) {
         LOGGER.info("Validando Fornecedor");
         if (fornecedorDTO == null) {
             throw new IllegalArgumentException("FornecedorDTO não deve ser nulo");
@@ -53,6 +55,15 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getCnpj())) {
             throw new IllegalArgumentException("CNPJ não deve ser nulo/vazio");
         }
+        boolean validarCnpj = true;
+        if (!fornecedorDTO.getCnpj().matches("[0-9]*")) {
+            validarCnpj = false;
+            throw new IllegalArgumentException("CNPJ não deve conter letras");
+        }
+        String cnpjF = fornecedorDTO.getCnpj();
+        if (cnpjF.length() != 14) {
+            throw new IllegalArgumentException("CNPJ deve conter 14 números");
+        }
         if (StringUtils.isEmpty(fornecedorDTO.getNomeFantasia())) {
             throw new IllegalArgumentException("Nome fantasia não deve ser nulo/vazio");
         }
@@ -62,10 +73,21 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getTelefone())) {
             throw new IllegalArgumentException("Telefone não deve ser nulo/vazio");
         }
+        boolean validarTelefone = true;
+        if (!fornecedorDTO.getTelefone().matches("[0-9]*")) {
+            validarTelefone = false;
+            throw new IllegalArgumentException("Telefone não deve conter letras");
+        }
+        String telefoneF = fornecedorDTO.getTelefone();
+        if (telefoneF.length() !=12) {
+            throw new IllegalArgumentException("Telefone deve conter 12 números");
+
+        }
         if (StringUtils.isEmpty(fornecedorDTO.geteMail())) {
             throw new IllegalArgumentException("E-mail não deve ser nulo/vazio");
         }
 
+      return validarCnpj;
     }
 
     public FornecedorDTO findById(Long id) {
