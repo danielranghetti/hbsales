@@ -144,6 +144,7 @@ public class CategoriaService {
         if (categoriaDTO == null) {
             throw new IllegalArgumentException("CategoriaDTO não deve ser nulo");
         }
+
         if (StringUtils.isEmpty(Long.toString(categoriaDTO.getFornecedor()))) {
             throw new IllegalArgumentException("Fornecedo categoria não cadastrado");
         }
