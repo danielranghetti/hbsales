@@ -16,10 +16,15 @@ public class FornecedorService {
 
     private final IFornecedorRepository iFornecedorRepository;
 
+
     @Autowired
     public FornecedorService(IFornecedorRepository iFornecedorRepository) {
         this.iFornecedorRepository = iFornecedorRepository;
+
     }
+
+
+
 
     public FornecedorDTO save(FornecedorDTO fornecedorDTO) {
 
@@ -108,6 +113,15 @@ public class FornecedorService {
         }
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
+    public Fornecedor findByFornecedorCnpj(String cnpj) {
+        Optional<Fornecedor> fornecedorOptional = this.iFornecedorRepository.findByCnpj(cnpj);
+
+        if (fornecedorOptional.isPresent()) {
+            return fornecedorOptional.get();
+        }
+
+        throw new IllegalArgumentException(String.format("cnpj %s não existe", cnpj));
     }
     public Fornecedor findFornecedorEntityById(Long id){
 

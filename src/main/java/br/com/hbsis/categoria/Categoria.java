@@ -6,6 +6,7 @@ package br.com.hbsis.categoria;
 import br.com.hbsis.fornecedor.Fornecedor;
 
 import javax.persistence.*;
+import java.util.List;
 
 
 @Entity
@@ -72,6 +73,7 @@ public  class Categoria {
                 ", nomeCategoria='" + nomeCategoria + '\'' +
                 '}';
     }
+
 
 
 }

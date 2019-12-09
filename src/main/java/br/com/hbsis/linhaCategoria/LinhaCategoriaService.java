@@ -6,6 +6,8 @@ import br.com.hbsis.categoria.CategoriaDTO;
 import br.com.hbsis.categoria.CategoriaService;
 import br.com.hbsis.fornecedor.FornecedorService;
 import com.opencsv.*;
+import org.apache.commons.lang.StringUtils;
+import org.omg.CORBA.SetOverrideType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -36,18 +38,30 @@ public class LinhaCategoriaService {
     }
 
     public LinhaCategoriaDTO save(LinhaCategoriaDTO linhaCategoriaDTO) {
-        //this.validate(linhaCategoriaDTO);
+        this.validate(linhaCategoriaDTO);
         LOGGER.info("Salvando linha da categoria");
         LOGGER.debug("LinhaCategoria {}", linhaCategoriaDTO);
 
         LinhaCategoria linhaCategoria = new LinhaCategoria();
-        linhaCategoria.setCodLinhaCategoria(linhaCategoriaDTO.getCodLinhaCategoria());
+
+
+        String codigoRecebido = linhaCategoriaDTO.getCodLinhaCategoria();
+
+        String codigoCompelto = validarCodigo(codigoRecebido);
+        codigoCompelto = codigoCompelto.toUpperCase();
+
+
+        linhaCategoria.setCodLinhaCategoria(codigoCompelto);
         linhaCategoria.setNomeLinha(linhaCategoriaDTO.getNomeLinha());
         linhaCategoria.setCategoria(categoriaService.findByCategoriaId(linhaCategoriaDTO.getCategoria()));
 
 
         linhaCategoria = this.iLinhaCategoriaRepository.save(linhaCategoria);
         return LinhaCategoriaDTO.of(linhaCategoria);
+    }
+    public String validarCodigo(String codigo){
+        String codigoCorrigido = StringUtils.leftPad(codigo,10, "0");
+        return codigoCorrigido;
     }
 
     public List<LinhaCategoria> saveAll(List<LinhaCategoria> linhaCategorias) throws Exception {
@@ -83,7 +97,13 @@ public class LinhaCategoriaService {
             LOGGER.debug("Payload: {}", linhaCategoriaDTO);
             LOGGER.debug("Linha Categoria Existente:{}", linhaCategoriaExistente);
 
-            linhaCategoriaExistente.setCodLinhaCategoria(linhaCategoriaDTO.getCodLinhaCategoria());
+            String codigoRecebido = linhaCategoriaDTO.getCodLinhaCategoria();
+
+            String codigoCompelto = validarCodigo(codigoRecebido);
+            codigoCompelto = codigoCompelto.toUpperCase();
+
+
+            linhaCategoriaExistente.setCodLinhaCategoria(codigoCompelto);
             linhaCategoriaExistente.setNomeLinha(linhaCategoriaDTO.getNomeLinha());
             linhaCategoriaExistente.setCategoria(categoriaService.findByCategoriaId(linhaCategoriaDTO.getCategoria()));
 
@@ -109,18 +129,18 @@ public class LinhaCategoriaService {
         ICSVWriter icsvWriter = new CSVWriterBuilder(writer).withSeparator(';')
                 .withEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER).withLineEnd(CSVWriter.DEFAULT_LINE_END).build();
 
-        String headerCSV[] = {"id_linha_categoria", "id_categoria", "cod_linha_categoria", "nome_linha"};
+        String headerCSV[] = {"codigo", "nome", "codigo_categoria", "nome_categoria"};
         icsvWriter.writeNext(headerCSV);
 
         for (LinhaCategoria linha : iLinhaCategoriaRepository.findAll()) {
-            icsvWriter.writeNext(new String[]{linha.getId().toString(), linha.getCategoria().getId().toString(), linha.getCodLinhaCategoria().toString(), linha.getNomeLinha()}
+            icsvWriter.writeNext(new String[]{linha.getCodLinhaCategoria(), linha.getNomeLinha(), linha.getCategoria().getCodigoCategoria(), linha.getCategoria().getNomeCategoria()}
             );
         }
 
 
     }
-        //faz a importação
 
+        //faz a importação
     public List<LinhaCategoria> readAll(MultipartFile file) throws Exception {
         InputStreamReader inputStreamReader = new InputStreamReader(file.getInputStream());
 
@@ -143,7 +163,7 @@ public class LinhaCategoriaService {
 
                 linhaCategoria.setId(Long.parseLong(resultado[0]));
                 categoriaDTO = categoriaService.findById(Long.parseLong(resultado[1]));
-                linhaCategoria.setCodLinhaCategoria(Long.parseLong(resultado[2]));
+                linhaCategoria.setCodLinhaCategoria((resultado[2]));
                 linhaCategoria.setNomeLinha(resultado[3]);
 
                 categoria.setId(categoriaDTO.getId());
@@ -162,6 +182,21 @@ public class LinhaCategoriaService {
             }
         }
         return iLinhaCategoriaRepository.saveAll(leitura);
+    }
+    private void validate(LinhaCategoriaDTO linhaCategoriaDTO) {
+        LOGGER.info("Validando linha da categoria");
+        if (linhaCategoriaDTO == null) {
+            throw new IllegalArgumentException("LinhaCategoriaDTO não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(linhaCategoriaDTO.getCodLinhaCategoria())){
+            throw new IllegalArgumentException("Codigo da linga categoria não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(linhaCategoriaDTO.getNomeLinha())){
+            throw  new IllegalArgumentException("Nome linha categoria não dve ser nulo");
+        }
+        if (StringUtils.isEmpty(Long.toString(linhaCategoriaDTO.getCategoria()))){
+            throw new IllegalArgumentException("categoria da linha categoria não cadastrada");
+        }
     }
 
 

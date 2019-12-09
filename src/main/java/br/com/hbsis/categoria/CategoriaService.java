@@ -46,15 +46,20 @@ public class CategoriaService {
                 .withLineEnd(CSVWriter.DEFAULT_LINE_END)
                 .build();
 
-        String headerCSV[] = {"id_categoria", "codigo_categoria", "nome_categoria", "id_fornecedor"};
+        String headerCSV[] = {"codigo_categoria", ";nome_categoria", "razao_social_fornecedor", ";cnpj_fornecedor "};
         csvWriter.writeNext(headerCSV);
 
         for (Categoria linha : iCategoriaRepository.findAll()) {
-            csvWriter.writeNext(new String[]{linha.getId().toString(), linha.getCodigoCategoria().toString(), linha.getNomeCategoria(), linha.getFornecedor().getId().toString()}
+            csvWriter.writeNext(new String[]{linha.getCodigoCategoria(),linha.getNomeCategoria(),linha.getFornecedor().getRazaoSocial(),mascaraCnpj(linha.getFornecedor().getCnpj())}
             );
         }
 
     }
+    public String mascaraCnpj(String CNPJ){
+    String mascara = CNPJ.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
+    return mascara;
+    }
+
 
 
     //faz a importação
@@ -78,21 +83,19 @@ public class CategoriaService {
                 FornecedorDTO fornecedorDTO = new FornecedorDTO();
 
 
-                categoria.setId(Long.parseLong(resultado[0]));
-                categoria.setCodigoCategoria((resultado[1]));
-                categoria.setNomeCategoria(resultado[2]);
-                fornecedorDTO = fornecedorService.findById(Long.parseLong(resultado[3]));
-
-                fornecedor.setId(fornecedorDTO.getId());
-                fornecedor.setRazaoSocial(fornecedorDTO.getRazaoSocial());
-                fornecedor.setCnpj(fornecedorDTO.getCnpj());
-                fornecedor.setNomeFantasia(fornecedorDTO.getNomeFantasia());
-                fornecedor.setEndereco(fornecedorDTO.getEndereco());
-                fornecedor.setTelefone(fornecedorDTO.getTelefone());
-                fornecedor.seteMail(fornecedorDTO.geteMail());
+                categoria.setCodigoCategoria((resultado[0]));
+                categoria.setNomeCategoria((resultado[1]));
+                fornecedor = fornecedorService.findByFornecedorCnpj(resultado[3].replaceAll("[^0-9]", ""));
 
                 categoria.setFornecedor(fornecedor);
 
+
+                if (!iCategoriaRepository.existsByCodigoCategoria((resultado[0]))){
+                    leitura.add(categoria);
+
+                } else {
+                    throw new IllegalArgumentException("codigo categoria   já  existente");
+                }
                 leitura.add(categoria);
                 System.out.println(leitura);
             } catch (Exception e) {
@@ -169,7 +172,7 @@ public class CategoriaService {
     public Categoria findByCategoriaId(Long id) {
         Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findById(id);
 
-        if (categoriaOptional.isPresent()) {
+        if (((Optional) categoriaOptional).isPresent()) {
             return categoriaOptional.get();
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
@@ -185,10 +188,18 @@ public class CategoriaService {
             LOGGER.debug("Payload: {}", categoriaDTO);
             LOGGER.debug("Categoria Existente: {}", categoriaExistente);
 
-            categoriaExistente.setFornecedor(fornecedorService.findByFornecedorId(categoriaDTO.getFornecedor()));
-            categoriaExistente.setCodigoCategoria(categoriaDTO.getCodigoCategoria());
-            categoriaExistente.setNomeCategoria(categoriaDTO.getNomeCategoria());
+            String incial = "CAT";
 
+            categoriaExistente.setFornecedor(fornecedorService.findByFornecedorId(categoriaDTO.getFornecedor()));
+            String cnpj = categoriaExistente.getFornecedor().getCnpj();
+            String ultDig = cnpj.substring(cnpj.length() - 4);
+
+            String codigo = categoriaDTO.getCodigoCategoria();
+            String codigoComZero = codigoValidar(codigo);
+            codigoComZero = codigoComZero.toUpperCase();
+
+            categoriaExistente.setCodigoCategoria(incial + ultDig + codigoComZero);
+            categoriaExistente.setNomeCategoria(categoriaDTO.getNomeCategoria());
 
             categoriaExistente = this.iCategoriaRepository.save(categoriaExistente);
 

@@ -2,28 +2,30 @@ package br.com.hbsis.linhaCategoria;
 
 public class LinhaCategoriaDTO {
     private Long id;
-    private  Long codLinhaCategoria;
+    private  String codLinhaCategoria;
     private Long categoria;
     private String nomeLinha;
 
     public LinhaCategoriaDTO() {
     }
 
-    public LinhaCategoriaDTO(Long id, Long codLinhaCategoria, Long categoria, String nomeLinha) {
+    public LinhaCategoriaDTO(Long id, String codLinhaCategoria, Long categoria, String nomeLinha) {
         this.id = id;
         this.codLinhaCategoria = codLinhaCategoria;
         this.categoria = categoria;
         this.nomeLinha = nomeLinha;
     }
-
-    public static LinhaCategoriaDTO of(LinhaCategoria linhaCategoria){
+    public static  LinhaCategoriaDTO of(LinhaCategoria linhaCategoria){
         return new LinhaCategoriaDTO(
                 linhaCategoria.getId(),
-                linhaCategoria.getCategoria().getId(),
                 linhaCategoria.getCodLinhaCategoria(),
+                linhaCategoria.getCategoria().getId(),
                 linhaCategoria.getNomeLinha()
         );
+
     }
+
+
 
     public Long getId() {
         return id;
@@ -33,7 +35,7 @@ public class LinhaCategoriaDTO {
         this.id = id;
     }
 
-    public Long getCodLinhaCategoria() {
+    public String getCodLinhaCategoria() {
         return codLinhaCategoria;
     }
 
@@ -45,7 +47,7 @@ public class LinhaCategoriaDTO {
         this.categoria = categoria;
     }
 
-    public void setCodLinhaCategoria(Long codLinhaCategoria) {
+    public void setCodLinhaCategoria(String codLinhaCategoria) {
         this.codLinhaCategoria = codLinhaCategoria;
     }
 
@@ -61,7 +63,7 @@ public class LinhaCategoriaDTO {
     public String toString() {
         return "LinhaCategoriaDTO{" +
                 "id=" + id +
-                ", id_categoria=" + categoria +
+                ", categoria=" + categoria +
                 ", codLinhaCategoria=" + codLinhaCategoria +
                 ", nomeLinha='" + nomeLinha + '\'' +
                 '}';
