@@ -4,8 +4,7 @@ import br.com.hbsis.linhaCategoria.LinhaCategoria;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.Optional;
+
 
 @Entity
 @Table(name = "seg_produtos")
@@ -15,21 +14,31 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "cod_produto", nullable = false)
-    private int codProduto;
-    @Column(name = "nome", nullable = false, length = 255)
+    private String codProduto;
+    @Column(name = "nome", nullable = false, length = 200)
     private String nome;
     @Column(name = "preco", nullable = false)
     private  double preco;
     @Column(name = "uni_caixa", nullable = false)
     private int uniCaixa;
-    @Column(name = "peso_uni", nullable = false, length = 255)
+    @Column(name = "peso_uni", nullable = false)
     private double pesoUni;
     @Column(name = "validade", nullable = false)
     private LocalDate validade;
+    @Column (name = "unidade_medida" ,length = 2)
+    private String unidadeMedida;
 
     @ManyToOne
     @JoinColumn(name = "id_linha_categoria", referencedColumnName = "id")
     private LinhaCategoria linhaCategoria;
+
+    public String getUnidadeMedida() {
+        return unidadeMedida;
+    }
+
+    public void setUnidadeMedida(String unidadeMedida) {
+        this.unidadeMedida = unidadeMedida;
+    }
 
     public LocalDate getValidade() {
         return validade;
@@ -51,11 +60,11 @@ public class Produto {
         this.id = id;
     }
 
-    public int getCodProduto() {
+    public String getCodProduto() {
         return codProduto;
     }
 
-    public void setCodProduto(int codProduto) {
+    public void setCodProduto(String codProduto) {
         this.codProduto = codProduto;
     }
 
@@ -109,7 +118,8 @@ public class Produto {
                 ", uniCaixa=" + uniCaixa +
                 ", pesoUni=" + pesoUni +
                 ", validade=" + validade +
-                ", id_linha_categoria=" + linhaCategoria.toString() +
+                ", unidadeMedida='" + unidadeMedida + '\'' +
+                ", id_linhaCategoria=" + linhaCategoria +
                 '}';
     }
 

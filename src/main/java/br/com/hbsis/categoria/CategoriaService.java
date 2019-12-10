@@ -3,6 +3,7 @@ package br.com.hbsis.categoria;
 import br.com.hbsis.fornecedor.Fornecedor;
 import br.com.hbsis.fornecedor.FornecedorDTO;
 import br.com.hbsis.fornecedor.FornecedorService;
+import br.com.hbsis.fornecedor.IFornecedorRepository;
 import com.opencsv.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -25,11 +26,15 @@ public class CategoriaService {
 
     private final ICategoriaRepository iCategoriaRepository;
     private final FornecedorService fornecedorService;
+    private final IFornecedorRepository iFornecedorRepository;
 
-    public CategoriaService(ICategoriaRepository iCategoriaRepository, FornecedorService fornecedorService) {
+    public CategoriaService(ICategoriaRepository iCategoriaRepository, FornecedorService fornecedorService, IFornecedorRepository iFornecedorRepository) {
         this.iCategoriaRepository = iCategoriaRepository;
         this.fornecedorService = fornecedorService;
+        this.iFornecedorRepository = iFornecedorRepository;
     }
+
+
 
     //faz a exportaçao
     public void findAll(HttpServletResponse response) throws Exception {
@@ -82,22 +87,28 @@ public class CategoriaService {
                 Fornecedor fornecedor = new Fornecedor();
                 FornecedorDTO fornecedorDTO = new FornecedorDTO();
 
-
-                categoria.setCodigoCategoria((resultado[0]));
-                categoria.setNomeCategoria((resultado[1]));
-                fornecedor = fornecedorService.findByFornecedorCnpj(resultado[3].replaceAll("[^0-9]", ""));
-
-                categoria.setFornecedor(fornecedor);
-
-
-                if (!iCategoriaRepository.existsByCodigoCategoria((resultado[0]))){
-                    leitura.add(categoria);
-
-                } else {
-                    throw new IllegalArgumentException("codigo categoria   já  existente");
+                if (iCategoriaRepository.existsByCodigoCategoria(resultado[0])){
+                    LOGGER.info("Categoria: {}", resultado[0] + " já existe");
                 }
-                leitura.add(categoria);
-                System.out.println(leitura);
+                else if (iFornecedorRepository.existsByCnpj(resultado[3].replaceAll("[^0-9]",""))) {
+
+                    categoria.setCodigoCategoria((resultado[0]));
+                    categoria.setNomeCategoria((resultado[1]));
+                    fornecedor = fornecedorService.findByFornecedorCnpj(resultado[3].replaceAll("[^0-9]", ""));
+
+                    categoria.setFornecedor(fornecedor);
+                    leitura.add(categoria);
+                }
+                else if (!iCategoriaRepository.existsByCodigoCategoria((resultado[0]))){
+                    categoria.setCodigoCategoria((resultado[0]));
+                    categoria.setNomeCategoria((resultado[1]));
+                    fornecedor = fornecedorService.findByFornecedorCnpj(resultado[3].replaceAll("[^0-9]", ""));
+
+                    categoria.setFornecedor(fornecedor);
+                    leitura.add(categoria);
+                }
+
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -167,6 +178,15 @@ public class CategoriaService {
         }
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
+
+    public Categoria findByCodigoCategoria(String codigoCategoria) {
+        Optional<Categoria> optionalCategoria = this.iCategoriaRepository.findByCodigoCategoria(codigoCategoria);
+
+        if (optionalCategoria.isPresent()) {
+            return optionalCategoria.get();
+        }
+        throw  new IllegalArgumentException(String.format("ID %s não existe", codigoCategoria));
     }
 
     public Categoria findByCategoriaId(Long id) {

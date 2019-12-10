@@ -4,6 +4,7 @@ import br.com.hbsis.fornecedor.IFornecedorRepository;
 import br.com.hbsis.linhaCategoria.ILinhaCategoriaRepository;
 import br.com.hbsis.linhaCategoria.LinhaCategoriaService;
 import com.opencsv.*;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
@@ -43,20 +44,32 @@ public class ProdutoService {
     }
 
     public ProdutoDTO save(ProdutoDTO produtoDTO) {
+        this.validate(produtoDTO);
         LOGGER.info("Salvando Produto");
         LOGGER.debug("Produto {}", produtoDTO);
 
         Produto produto = new Produto();
-        produto.setCodProduto(produtoDTO.getCodProduto());
+
+        String codigorecebido = produtoDTO.getCodProduto();
+        String codigoComZero = validarCodigo(codigorecebido);
+        String codFinal = codigoComZero.toUpperCase();
+
+        produto.setCodProduto(codFinal);
         produto.setNome(produtoDTO.getNome());
         produto.setPreco(produtoDTO.getPreco());
         produto.setUniCaixa(produtoDTO.getUniCaixa());
         produto.setPesoUni(produtoDTO.getPesoUni());
         produto.setValidade(produtoDTO.getValidade());
+        produto.setUnidadeMedida(produtoDTO.getUnidadeMedida());
         produto.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaId(produtoDTO.getLinhaCategoria()));
 
         produto = this.iProdutoRepository.save(produto);
         return ProdutoDTO.of(produto);
+    }
+
+    public String validarCodigo(String codigo) {
+        String codigoProcessador = StringUtils.leftPad(codigo, 10, "0");
+        return codigoProcessador;
     }
 
     public ProdutoDTO finById(Long id) {
@@ -68,6 +81,7 @@ public class ProdutoService {
         throw new IllegalArgumentException(String.format("esse %s não existe", id));
 
     }
+
     public Produto findByProdutoId(Long id) {
         Optional<Produto> produtoOptional = this.iProdutoRepository.findById(id);
 
@@ -147,7 +161,7 @@ public class ProdutoService {
 
                 Produto produto = new Produto();
                 produto.setId(Long.parseLong(dados[0]));
-                produto.setCodProduto(Integer.parseInt(dados[2]));
+                produto.setCodProduto((dados[2]));
                 produto.setNome(dados[3]);
                 produto.setPreco(Double.parseDouble(dados[4]));
                 produto.setUniCaixa(Integer.parseInt(dados[5]));
@@ -180,7 +194,7 @@ public class ProdutoService {
                 Produto produto = new Produto();
                 if (IFornecedorRepository.existsById(id)) {
                     produto.setId(Long.parseLong(dados[0]));
-                    produto.setCodProduto(Integer.parseInt(dados[2]));
+                    produto.setCodProduto((dados[2]));
                     produto.setNome(dados[3]);
                     produto.setPreco(Double.parseDouble(dados[4]));
                     produto.setUniCaixa(Integer.parseInt(dados[5]));
@@ -188,7 +202,7 @@ public class ProdutoService {
                     produto.setValidade(LocalDate.parse(dados[7]));
                     produto.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaId(Long.parseLong(dados[1])));
 
-                    if  (iProdutoRepository.existsById(produto.getId()) && id.equals(produto.getLinhaCategoria().getCategoria().getFornecedor().getId())) {
+                    if (iProdutoRepository.existsById(produto.getId()) && id.equals(produto.getLinhaCategoria().getCategoria().getFornecedor().getId())) {
                         produto.setId(iProdutoRepository.findById(produto.getId()).get().getId());
                         update(ProdutoDTO.of(produto), produto.getId());
 
@@ -206,11 +220,49 @@ public class ProdutoService {
                 }
 
 
-            } catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
     }
 
+    private void validate(ProdutoDTO produtoDTO) {
+
+        if (produtoDTO == null) {
+            throw new IllegalArgumentException("ProditoDTO não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(produtoDTO.getCodProduto())) {
+            throw new IllegalArgumentException("Código do produto não pode ser nulo");
+        }
+        if (StringUtils.isEmpty(produtoDTO.getNome())) {
+            throw new IllegalArgumentException("O nome do produto nao deve ser nulo");
+        }
+        if (StringUtils.isEmpty(String.valueOf(produtoDTO.getPesoUni()))) {
+            throw new IllegalArgumentException("O peso unitário não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(String.valueOf(produtoDTO.getPreco()))) {
+            throw new IllegalArgumentException("O preço não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(String.valueOf(produtoDTO.getUniCaixa()))) {
+            throw new IllegalArgumentException("A unidade por caixa não deve ser nula");
+        }
+        if (StringUtils.isEmpty(String.valueOf(produtoDTO.getValidade()))) {
+            throw new IllegalArgumentException("A data de validade do produto não deve ser nula");
+        }
+        if (StringUtils.isEmpty(String.valueOf(produtoDTO.getLinhaCategoria()))) {
+            throw new IllegalArgumentException("Linha do produto não cadrastada");
+        }
+        if (StringUtils.isEmpty(produtoDTO.getUnidadeMedida())) {
+            throw new IllegalArgumentException("Unidade de medida não pode ser nula");
+        }
+        switch (produtoDTO.getUnidadeMedida()){
+            case "mg":
+            case "g":
+            case "Kg":
+                break;
+            default:
+                throw new IllegalArgumentException("Unidade de medida não permitida");
+        }
+    }
 }

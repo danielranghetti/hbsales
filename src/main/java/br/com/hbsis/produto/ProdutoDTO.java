@@ -5,18 +5,19 @@ import java.time.LocalDate;
 public class ProdutoDTO {
 
     private Long id;
-    private int codProduto;
+    private String codProduto;
     private String nome;
     private double preco;
     private int uniCaixa;
     private double pesoUni;
     private LocalDate validade;
     private Long linhaCategoria;
+    private  String unidadeMedida;
 
     public ProdutoDTO() {
     }
 
-    public ProdutoDTO(Long id, int codProduto, String nome, double preco, int uniCaixa, double pesoUni, LocalDate validade, Long linhaCategoria) {
+    public ProdutoDTO(Long id, String codProduto, String nome, double preco, int uniCaixa, double pesoUni, LocalDate validade, Long linhaCategoria, String unidadeMedida) {
         this.id = id;
         this.codProduto = codProduto;
         this.nome = nome;
@@ -25,6 +26,7 @@ public class ProdutoDTO {
         this.pesoUni = pesoUni;
         this.validade = validade;
         this.linhaCategoria = linhaCategoria;
+        this.unidadeMedida = unidadeMedida;
     }
 
        public static ProdutoDTO of(Produto produto){
@@ -36,8 +38,17 @@ public class ProdutoDTO {
         produto.getUniCaixa(),
         produto.getPesoUni(),
         produto.getValidade(),
-        produto.getLinhaCategoria().getId()
+        produto.getLinhaCategoria().getId(),
+        produto.getUnidadeMedida()
         );
+    }
+
+    public String getUnidadeMedida() {
+        return unidadeMedida;
+    }
+
+    public void setUnidadeMedida(String unidadeMedida) {
+        this.unidadeMedida = unidadeMedida;
     }
 
     public Long getLinhaCategoria() {
@@ -56,11 +67,11 @@ public class ProdutoDTO {
         this.id = id;
     }
 
-    public int getCodProduto() {
+    public String getCodProduto() {
         return codProduto;
     }
 
-    public void setCodProduto(int codProduto) {
+    public void setCodProduto(String codProduto) {
         this.codProduto = codProduto;
     }
 
@@ -114,7 +125,8 @@ public class ProdutoDTO {
                 ", uniCaixa=" + uniCaixa +
                 ", pesoUni=" + pesoUni +
                 ", validade=" + validade +
-                ", id_linha_categoria=" + linhaCategoria +
+                ", id_linhaCategoria=" + linhaCategoria +
+                ", unidadeMedida='" + unidadeMedida + '\'' +
                 '}';
     }
 }

@@ -8,6 +8,7 @@ import java.util.Optional;
 @Repository
 public interface ICategoriaRepository extends JpaRepository<Categoria, Long> {
 
+    boolean existsByNomeCategoria(String nomeCategoria);
     boolean existsByCodigoCategoria (String codigoCategoria);
     Optional<Categoria> findByCodigoCategoria(String codigoCategoria);
 }

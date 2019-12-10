@@ -4,6 +4,7 @@ package br.com.hbsis.linhaCategoria;
 import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.CategoriaDTO;
 import br.com.hbsis.categoria.CategoriaService;
+import br.com.hbsis.categoria.ICategoriaRepository;
 import br.com.hbsis.fornecedor.FornecedorService;
 import com.opencsv.*;
 import org.apache.commons.lang.StringUtils;
@@ -29,12 +30,13 @@ public class LinhaCategoriaService {
     private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
     private final CategoriaService categoriaService;
     private final FornecedorService fornecedorService;
+    private final ICategoriaRepository iCategoriaRepository;
 
-
-    public LinhaCategoriaService(ILinhaCategoriaRepository iLinhaCategoriaRepository, CategoriaService categoriaService,FornecedorService fornecedorService) {
+    public LinhaCategoriaService(ILinhaCategoriaRepository iLinhaCategoriaRepository, CategoriaService categoriaService, FornecedorService fornecedorService, ICategoriaRepository iCategoriaRepository) {
         this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
         this.categoriaService = categoriaService;
         this.fornecedorService = fornecedorService;
+        this.iCategoriaRepository = iCategoriaRepository;
     }
 
     public LinhaCategoriaDTO save(LinhaCategoriaDTO linhaCategoriaDTO) {
@@ -59,8 +61,9 @@ public class LinhaCategoriaService {
         linhaCategoria = this.iLinhaCategoriaRepository.save(linhaCategoria);
         return LinhaCategoriaDTO.of(linhaCategoria);
     }
-    public String validarCodigo(String codigo){
-        String codigoCorrigido = StringUtils.leftPad(codigo,10, "0");
+
+    public String validarCodigo(String codigo) {
+        String codigoCorrigido = StringUtils.leftPad(codigo, 10, "0");
         return codigoCorrigido;
     }
 
@@ -76,6 +79,7 @@ public class LinhaCategoriaService {
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
+
     public LinhaCategoria findByLinhaCategoriaId(Long id) {
         Optional<LinhaCategoria> linhaCategoriaOptional = this.iLinhaCategoriaRepository.findById(id);
 
@@ -86,6 +90,15 @@ public class LinhaCategoriaService {
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
+    public LinhaCategoria findByLinhaCategoriaCodLinhaCategoria(String codLinhaCategoria) {
+        Optional<LinhaCategoria> optionalLinhaCategoria = this.iLinhaCategoriaRepository.findByCodLinhaCategoria(codLinhaCategoria);
+
+        if (optionalLinhaCategoria.isPresent()) {
+            return optionalLinhaCategoria.get();
+        }
+
+        throw new IllegalArgumentException(String.format("ID %s don't exist", codLinhaCategoria));
+    }
 
     public LinhaCategoriaDTO update(LinhaCategoriaDTO linhaCategoriaDTO, Long id) {
         Optional<LinhaCategoria> linhaCategoriaExistenteOptional = this.iLinhaCategoriaRepository.findById(id);
@@ -140,9 +153,9 @@ public class LinhaCategoriaService {
 
     }
 
-        //faz a importação
-    public List<LinhaCategoria> readAll(MultipartFile file) throws Exception {
-        InputStreamReader inputStreamReader = new InputStreamReader(file.getInputStream());
+    //faz a importação
+    public List<LinhaCategoria> readAll(MultipartFile multipartFile) throws Exception {
+        InputStreamReader inputStreamReader = new InputStreamReader(multipartFile.getInputStream());
 
         CSVReader csvReader = new CSVReaderBuilder(inputStreamReader)
                 .withSkipLines(1).build();
@@ -160,41 +173,46 @@ public class LinhaCategoriaService {
                 Categoria categoria = new Categoria();
                 CategoriaDTO categoriaDTO = new CategoriaDTO();
 
+                if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(resultado[0])) {
+                    LOGGER.info("Linha categoria: {}", resultado[0] + " já existe");
+                }
 
-                linhaCategoria.setId(Long.parseLong(resultado[0]));
-                categoriaDTO = categoriaService.findById(Long.parseLong(resultado[1]));
-                linhaCategoria.setCodLinhaCategoria((resultado[2]));
-                linhaCategoria.setNomeLinha(resultado[3]);
+                else if (iCategoriaRepository.existsByCodigoCategoria(resultado[2])) {
 
-                categoria.setId(categoriaDTO.getId());
-                categoria.setCodigoCategoria(categoriaDTO.getCodigoCategoria());
-                categoria.setNomeCategoria(categoriaDTO.getNomeCategoria());
+                    linhaCategoria.setCodLinhaCategoria((resultado[0]));
+                    linhaCategoria.setNomeLinha(resultado[1]);
+                    categoria = categoriaService.findByCodigoCategoria(resultado[2]);
 
-                //categoria.setFornecedor(fornecedorService.findByFornecedorId(categoriaDTO.getFornecedor()));
+                    linhaCategoria.setCategoria(categoria);
+                    leitura.add(linhaCategoria);
+                }
+
+                 else if (!iLinhaCategoriaRepository.existsByCodLinhaCategoria(resultado[0])){
+                    linhaCategoria.setCategoria(categoria);
+                    leitura.add(linhaCategoria);
 
 
-                linhaCategoria.setCategoria(categoria);
-
-                leitura.add(linhaCategoria);
-                System.out.println(leitura);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
         }
         return iLinhaCategoriaRepository.saveAll(leitura);
     }
+
     private void validate(LinhaCategoriaDTO linhaCategoriaDTO) {
         LOGGER.info("Validando linha da categoria");
         if (linhaCategoriaDTO == null) {
             throw new IllegalArgumentException("LinhaCategoriaDTO não deve ser nulo");
         }
-        if (StringUtils.isEmpty(linhaCategoriaDTO.getCodLinhaCategoria())){
+        if (StringUtils.isEmpty(linhaCategoriaDTO.getCodLinhaCategoria())) {
             throw new IllegalArgumentException("Codigo da linga categoria não deve ser nulo");
         }
-        if (StringUtils.isEmpty(linhaCategoriaDTO.getNomeLinha())){
-            throw  new IllegalArgumentException("Nome linha categoria não dve ser nulo");
+        if (StringUtils.isEmpty(linhaCategoriaDTO.getNomeLinha())) {
+            throw new IllegalArgumentException("Nome linha categoria não dve ser nulo");
         }
-        if (StringUtils.isEmpty(Long.toString(linhaCategoriaDTO.getCategoria()))){
+        if (StringUtils.isEmpty(Long.toString(linhaCategoriaDTO.getCategoria()))) {
             throw new IllegalArgumentException("categoria da linha categoria não cadastrada");
         }
     }

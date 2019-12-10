@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface IFornecedorRepository extends JpaRepository<Fornecedor, Long> {
     @Override
     boolean existsById(Long id);
+    boolean existsByCnpj (String cnpj);
 
     Optional<Fornecedor> findByCnpj(String cnpj);
 
