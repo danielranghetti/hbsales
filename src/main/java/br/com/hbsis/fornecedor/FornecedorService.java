@@ -1,11 +1,18 @@
 package br.com.hbsis.fornecedor;
 
+import br.com.hbsis.categoria.Categoria;
+import br.com.hbsis.categoria.CategoriaDTO;
+import br.com.hbsis.categoria.CategoriaService;
+import br.com.hbsis.categoria.ICategoriaRepository;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -15,10 +22,14 @@ public class FornecedorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FornecedorService.class);
 
     private final IFornecedorRepository iFornecedorRepository;
+    private final CategoriaService categoriaService;
+    private final ICategoriaRepository iCategoriaRepository;
 
     @Autowired
-    public FornecedorService(IFornecedorRepository iFornecedorRepository) {
+    public FornecedorService(IFornecedorRepository iFornecedorRepository, @Lazy CategoriaService categoriaService, ICategoriaRepository iCategoriaRepository) {
         this.iFornecedorRepository = iFornecedorRepository;
+        this.categoriaService = categoriaService;
+        this.iCategoriaRepository = iCategoriaRepository;
     }
 
     public FornecedorDTO save(FornecedorDTO fornecedorDTO) {
@@ -54,7 +65,7 @@ public class FornecedorService {
             throw new IllegalArgumentException("CNPJ não deve ser nulo/vazio");
         }
 
-        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getCnpj()));
+        //org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getCnpj()));
 
         if (fornecedorDTO.getCnpj().length() != 14) {
             throw new IllegalArgumentException("CNPJ deve conter 14 números");
@@ -68,7 +79,7 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getTelefone())) {
             throw new IllegalArgumentException("Telefone não deve ser nulo/vazio");
         }
-        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getTelefone()));
+        //org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getTelefone()));
         if (fornecedorDTO.getTelefone().length() > 14 || fornecedorDTO.getTelefone().length() < 13) {
             throw new IllegalArgumentException("Telefone deve conter entre 13 e 14 números");
         }
@@ -119,6 +130,11 @@ public class FornecedorService {
 
         if (fornecedorExistenteOptional.isPresent()) {
             Fornecedor fornecedorExistente = fornecedorExistenteOptional.get();
+            Fornecedor fornecedor = new Fornecedor();
+            List<Categoria> categorias = new ArrayList<>();
+            fornecedor = findByFornecedorId(id);
+
+            categorias = iCategoriaRepository.findByFornecedor(fornecedor);
 
             LOGGER.info("Atualizando fornecedor... id: [{}]", fornecedorExistente.getId());
             LOGGER.debug("Payload: {}", fornecedorDTO);
@@ -134,10 +150,13 @@ public class FornecedorService {
 
             fornecedorExistente = this.iFornecedorRepository.save(fornecedorExistente);
 
+            for (Categoria categoria : categorias) {
+                categoria.setCodigoCategoria(categoria.getCodigoCategoria().substring(7, 10));
+                categoria.setFornecedor(fornecedorExistente);
+                categoriaService.update(CategoriaDTO.of(categoria), categoria.getId());
+            }
             return FornecedorDTO.of(fornecedorExistente);
         }
-
-
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
@@ -146,9 +165,8 @@ public class FornecedorService {
 
         this.iFornecedorRepository.deleteById(id);
     }
-
-
     // TODO: 12/12/2019 remover código que não está sendo usado
+
 
 }
 

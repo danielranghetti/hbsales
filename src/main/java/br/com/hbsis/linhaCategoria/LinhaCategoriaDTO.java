@@ -15,6 +15,7 @@ public class LinhaCategoriaDTO {
         this.categoria = categoria;
         this.nomeLinha = nomeLinha;
     }
+
     public static  LinhaCategoriaDTO of(LinhaCategoria linhaCategoria){
         return new LinhaCategoriaDTO(
                 linhaCategoria.getId(),
@@ -22,10 +23,7 @@ public class LinhaCategoriaDTO {
                 linhaCategoria.getCategoria().getId(),
                 linhaCategoria.getNomeLinha()
         );
-
     }
-
-
 
     public Long getId() {
         return id;

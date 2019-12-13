@@ -1,4 +1,3 @@
-"código";"nome";"preço";"quantidade de unidades por caixa";"peso ";"validade";" código da linha de categoria";"nome da Linha de Categoria";"código da Categoria";" nome da Categoria";"CNPJ";"razão social";""
-"000000003P";"cevada";"R$3.52";"6";"1.658Kg";"12/10/2019";"0000000GR1";"grão";"CAT564710i";"insumo";"98.765.432/1956-47";"Rafael"
-"000000004R";"Skol beats";"R$3.52";"6";"1.658Kg";"12/12/2019";"0000000SK2";"Skol";"CAT2379008";"cerveja";"12.345.678/9123-79";"Daniel"
-"000000074S";"Stella long";"R$3.99";"24";"658.0g";"25/12/2019";"0000000ST1";"Stella";"CAT5647001";"cerveja";"98.765.432/1956-47";"Rafael"
+código;nome;preço;quantidade de unidades por caixa;peso ;validade; código da linha de categoria;nome da Linha de Categoria;código da Categoria; nome da Categoria;CNPJ;razão social
+0000000SKL;skol puro Malte;R$2.55;25;650.5g;06/12/2019;00000000SK;Skol;CAT6725008;Cerveja;02.808.708/0067-25;CIA DE BEBIDAS DAS AMERICAS - AMBEV - F.SANTA CATARINA
+0000000STL;Stella long;R$3.98;6;650.0g;25/12/2019;00000000ST;Stella;CAT6725008;Cerveja;02.808.708/0067-25;CIA DE BEBIDAS DAS AMERICAS - AMBEV - F.SANTA CATARINA

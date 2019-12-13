@@ -37,7 +37,7 @@ public class CategoriaRest {
 
     @GetMapping("/exporta-csv-categorias")
     public void findAll(HttpServletResponse response) throws Exception {
-        categoriaService.findAll(response);
+        categoriaService.csvTocategoriaExport(response);
     }
 
 

@@ -36,7 +36,7 @@ public class CategoriaService {
 
 
     //faz a exportaçao
-    public void findAll(HttpServletResponse response) throws Exception {
+    public void csvTocategoriaExport(HttpServletResponse response) throws Exception {
 
         String nomeArquivo = "categorias.csv";
         response.setContentType("text/csv");
@@ -50,7 +50,7 @@ public class CategoriaService {
                 .withLineEnd(CSVWriter.DEFAULT_LINE_END)
                 .build();
 
-        String headerCSV[] = {"codigo_categoria", ";nome_categoria", "razao_social_fornecedor", ";cnpj_fornecedor "};
+        String headerCSV[] = {"codigo_categoria", "nome_categoria", "razao_social_fornecedor", "cnpj_fornecedor "};
         csvWriter.writeNext(headerCSV);
 
         for (Categoria linha : iCategoriaRepository.findAll()) {
@@ -102,9 +102,11 @@ public class CategoriaService {
                         leitura.add(categoria);
                     }
                     else if (!iCategoriaRepository.existsByCodigoCategoria(codigoCategoria)){
+
                         categoria.setCodigoCategoria(codigoCategoria);
                         categoria.setNomeCategoria(nomeCategoria);
                         fornecedor = fornecedorService.findByFornecedorCnpj(cnpj);
+                        LOGGER.info("Categoria: {}", codigoCategoria + " salvando");
 
                         categoria.setFornecedor(fornecedor);
                         leitura.add(categoria);
@@ -174,9 +176,10 @@ public class CategoriaService {
         if (StringUtils.isEmpty(categoriaDTO.getCodigoCategoria())) {
             throw new IllegalArgumentException("Codigo categoria não deve ser nulo");
         }
-        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(categoriaDTO.getCodigoCategoria()));
-
-
+//        }
+//        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(categoriaDTO.getCodigoCategoria()));
+//
+//
 
         }
 
@@ -196,7 +199,7 @@ public class CategoriaService {
         if (optionalCategoria.isPresent()) {
             return optionalCategoria.get();
         }
-        throw  new IllegalArgumentException(String.format("ID %s não existe", codigoCategoria));
+        throw  new IllegalArgumentException(String.format("Codigo categoria %s não existe", codigoCategoria));
     }
 
     public Categoria findByCategoriaId(Long id) {
@@ -245,4 +248,4 @@ public class CategoriaService {
     }
 
 
-}
+   }

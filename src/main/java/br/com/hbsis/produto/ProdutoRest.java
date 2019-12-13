@@ -43,27 +43,32 @@ public class ProdutoRest {
         return this.produtoService.update(produtoDTO, id);
 
     }
+
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") Long id){
-        LOGGER.info("Recebendo delete para Produto de ID: {} ",id);
+    public void delete(@PathVariable("id") Long id) {
+        LOGGER.info("Recebendo delete para Produto de ID: {} ", id);
 
         this.produtoService.delete(id);
     }
+
     @GetMapping("/exporta-csv-produtos")
-    public void findAll(HttpServletResponse response) throws Exception{
-        produtoService.findAll(response);
+    public void findAll(HttpServletResponse response) throws Exception {
+        produtoService.csvToProdutoExport(response);
     }
+
     @GetMapping("/exporta-csvproduto-fornecedor")
-    public void findAllFornecedor(HttpServletResponse response) throws  Exception{
-        produtoService.findAllFornecedor(response);
+    public void findAllFornecedor(HttpServletResponse response) throws Exception {
+        produtoService.csvToProdutoFornecedorExport(response);
     }
+
     @PostMapping("/importa-csv-produtos")
-    public void  importCSV(@RequestParam("file")MultipartFile file) throws Exception{
-        produtoService.reaAll(file);
+    public void importCSV(@RequestParam("file") MultipartFile file) throws Exception {
+        produtoService.importFromCsvProduto(file);
     }
+
     @PostMapping("/importa-csv-produtos-fornecedor/{id}")
-    public void  importCSVFornecedor(@PathVariable("id") Long id ,@RequestParam("file")MultipartFile file) throws Exception{
-        produtoService.importaProdutoFornecedor(id ,file);
+    public void importCSVFornecedor(@PathVariable("id") Long id, @RequestParam("file") MultipartFile file) throws Exception {
+        produtoService.csvToProdutoFornecedor(id, file);
     }
 
 }
