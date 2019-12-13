@@ -39,8 +39,6 @@ public class ProdutoService {
     private final FornecedorService fornecedorService;
 
 
-
-
     public ProdutoService(ILinhaCategoriaRepository iLinhaCategoriaRepository, IProdutoRepository iProdutoRepository, IFornecedorRepository iFornecedorRepository, ICategoriaRepository iCategoriaRepository, LinhaCategoriaService linhaCategoriaService, CategoriaService categoriaService, FornecedorService fornecedorService) {
         this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
         this.iProdutoRepository = iProdutoRepository;
@@ -92,7 +90,7 @@ public class ProdutoService {
         if (((Optional) produtoOptional).isPresent()) {
             return ProdutoDTO.of(produtoOptional.get());
         }
-        throw new IllegalArgumentException(String.format("esse %s não existe", id));
+        throw new IllegalArgumentException(String.format("esse  %s não existe", id));
 
     }
 
@@ -105,16 +103,16 @@ public class ProdutoService {
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
-    public Produto findByCodProduto( String codProduto) {
+
+    public Produto findByCodProduto(String codProduto) {
         Optional<Produto> produtoOptional = this.iProdutoRepository.findByCodProduto(codProduto);
 
         if (produtoOptional.isPresent()) {
             return produtoOptional.get();
         }
 
-        throw new IllegalArgumentException(String.format("Codigo produto %s não existe",codProduto));
+        throw new IllegalArgumentException(String.format("Codigo produto %s não existe", codProduto));
     }
-
 
     public ProdutoDTO update(ProdutoDTO produtoDTO, Long id) {
         Optional<Produto> produtoExistenteOptional = this.iProdutoRepository.findById(id);
@@ -138,6 +136,7 @@ public class ProdutoService {
             produtoExistente.setUniCaixa(produtoDTO.getUniCaixa());
             produtoExistente.setPesoUni(produtoDTO.getPesoUni());
             produtoExistente.setValidade(produtoDTO.getValidade());
+            produtoExistente.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaId(produtoDTO.getLinhaCategoria()));
 
 
             produtoExistente = iProdutoRepository.save(produtoExistente);
@@ -154,8 +153,7 @@ public class ProdutoService {
         iProdutoRepository.deleteById(id);
     }
 
-    // exportação
-    public void findAll(HttpServletResponse response) throws Exception {
+    public void csvToProdutoExport(HttpServletResponse response) throws Exception {
 
         String arquivo = " csv_produtos.csv";
         response.setContentType("text/csv");
@@ -178,7 +176,7 @@ public class ProdutoService {
 
     }
 
-    public void findAllFornecedor(HttpServletResponse response) throws Exception {
+    public void csvToProdutoFornecedorExport(HttpServletResponse response) throws Exception {
 
         String arquivo = " csv_produtos-fornecedor.csv";
         response.setContentType("text/csv");
@@ -201,14 +199,12 @@ public class ProdutoService {
 
     }
 
-
     public String mascaraCnpj(String CNPJ) {
         String mascara = CNPJ.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
         return mascara;
     }
 
-    //faz a importação
-    public List<Produto> reaAll(MultipartFile file) throws Exception {
+    public List<Produto> csvToProduto(MultipartFile file) throws Exception {
         InputStreamReader inputStreamReader = new InputStreamReader(file.getInputStream());
         CSVReader csvReader = new CSVReaderBuilder(inputStreamReader)
                 .withSkipLines(1).build();
@@ -223,44 +219,33 @@ public class ProdutoService {
                 Produto produto = new Produto();
                 LinhaCategoria linhaCategoria = new LinhaCategoria();
 
-                if (iProdutoRepository.existsByCodProduto(dados[0])) {
-                    LOGGER.info("Produto: {}", dados[0] + " já existe");
-                } else if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(dados[6])) {
+                String codProduto = dados[0];
+                String nomeProduto = dados[1];
+                double preco = Double.parseDouble(dados[2].trim().replace(',', '.').replaceAll("[A-Z$]", ""));
+                int uniCaixa = Integer.parseInt(dados[3]);
+                double pesoUni = Double.parseDouble(dados[4].replaceAll("[A-Za-z]", ""));
+                String unidadeMedida = dados[4].replaceAll("[0-9]", "");
+                String codLinhaCategoria = dados[6];
+                String data = dados[5].toString();
+                int dia = Integer.parseInt(data.substring(0, 2));
+                int mes = Integer.parseInt(data.substring(3, 5));
+                int ano = Integer.parseInt(data.substring(6, 10));
+                LocalDate datavalidade = LocalDate.of(ano, mes, dia);
 
-                    String data = dados[5].toString();
-                    int dia = Integer.parseInt(data.substring(0, 2));
-                    int mes = Integer.parseInt(data.substring(3, 5));
-                    int ano = Integer.parseInt(data.substring(6, 10));
-                    LocalDate datavalidade = LocalDate.of(ano, mes, dia);
 
-                    produto.setCodProduto((dados[0]));
-                    produto.setNome(dados[1]);
-                    produto.setPreco(Double.parseDouble(dados[2].trim().replace(',', '.').replaceAll("[A-Z$]", "")));
-                    produto.setUniCaixa(Integer.parseInt(dados[3]));
-                    produto.setPesoUni(Double.parseDouble(dados[4].replaceAll("[A-Za-z]", "")));
-                    produto.setUnidadeMedida(dados[4].replaceAll("[0-9.]", ""));
-                    produto.setValidade(datavalidade);
-                    linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(dados[6]);
-
-                    produto.setLinhaCategoria(linhaCategoria);
-                    resultadoLeitura.add(produto);
+                if (iProdutoRepository.existsByCodProduto(codProduto)) {
+                    LOGGER.info("Produto: {}", codProduto + " já existe");
 
                 } else if (!iProdutoRepository.existsByCodProduto(dados[6])) {
 
-                    String data = dados[5].toString();
-                    int dia = Integer.parseInt(data.substring(0, 2));
-                    int mes = Integer.parseInt(data.substring(3, 5));
-                    int ano = Integer.parseInt(data.substring(6, 10));
-                    LocalDate datavalidade = LocalDate.of(ano, mes, dia);
-
-                    produto.setCodProduto((dados[0]));
-                    produto.setNome(dados[1]);
-                    produto.setPreco(Double.parseDouble(dados[2].trim().replace(',', '.').replaceAll("[A-Z$]", "")));
-                    produto.setUniCaixa(Integer.parseInt(dados[3]));
-                    produto.setPesoUni(Double.parseDouble(dados[4].replaceAll("[A-Za-z]", "")));
-                    produto.setUnidadeMedida(dados[4].replaceAll("[0-9]", ""));
+                    produto.setCodProduto((codProduto));
+                    produto.setNome(nomeProduto);
+                    produto.setPreco(preco);
+                    produto.setUniCaixa(uniCaixa);
+                    produto.setPesoUni(pesoUni);
+                    produto.setUnidadeMedida(unidadeMedida);
                     produto.setValidade(datavalidade);
-                    linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(dados[6]);
+                    linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
                     produto.setLinhaCategoria(linhaCategoria);
                     resultadoLeitura.add(produto);
 
@@ -275,7 +260,12 @@ public class ProdutoService {
 
     }
 
-    public void importaProdutoFornecedor(Long id, MultipartFile file) throws Exception {
+    public void importFromCsvProduto(MultipartFile file) throws Exception {
+        List<Produto> produtos = this.csvToProduto(file);
+        this.saveAll(produtos);
+    }
+
+    public void csvToProdutoFornecedor(Long id, MultipartFile file) throws Exception {
         InputStreamReader inputStreamReader = new InputStreamReader(file.getInputStream());
         CSVReader csvReader = new CSVReaderBuilder(inputStreamReader)
                 .withSkipLines(1).build();
@@ -291,17 +281,33 @@ public class ProdutoService {
                 LinhaCategoria linhaCategoria = new LinhaCategoria();
                 Categoria categoria = new Categoria();
 
+                String codProduto = resultado[0];
+                String nomeProduto = resultado[1];
+                double preco = Double.parseDouble(resultado[2].trim().replace(',', '.').replaceAll("[A-Z$]", ""));
+                int uniCaixa = Integer.parseInt(resultado[3]);
+                double peso = Double.parseDouble(resultado[4].replaceAll("[A-Za-z]", ""));
+                String unimedida = resultado[4].replaceAll("[0-9.]", "");
 
+                String data = resultado[5].toString();
+                int dia = Integer.parseInt(data.substring(0, 2));
+                int mes = Integer.parseInt(data.substring(3, 5));
+                int ano = Integer.parseInt(data.substring(6, 10));
+                LocalDate datavalidade = LocalDate.of(ano, mes, dia);
+
+                String codLinhaCategoria = resultado[6];
+                String nomeLinha = resultado[7];
+                String codigocategoria = resultado[8];
+                String nomeCategoria = resultado[9];
 
                 if (iFornecedorRepository.existsById(id)) {
-                    if (!(iCategoriaRepository.existsByCodigoCategoria(resultado[8]))) {
-                        categoria.setNomeCategoria(resultado[9]);
-                        categoria.setCodigoCategoria(resultado[8]);
+                    if (!(iCategoriaRepository.existsByCodigoCategoria(codigocategoria))) {
+                        categoria.setNomeCategoria(nomeCategoria);
+                        categoria.setCodigoCategoria(codigocategoria);
                         categoria.setFornecedor(fornecedorService.findByFornecedorId(id));
                         iCategoriaRepository.save(categoria);
-                    } else if (iCategoriaRepository.existsByCodigoCategoria(resultado[8])) {
-                        categoria = categoriaService.findByCodigoCategoria(resultado[8]);
-                        Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findByCodigoCategoria(resultado[8]);
+                    } else if (iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
+                        categoria = categoriaService.findByCodigoCategoria(codigocategoria);
+                        Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findByCodigoCategoria(codigocategoria);
 
                         if (categoriaOptional.isPresent()) {
                             Categoria categoriaExistente = categoriaOptional.get();
@@ -310,74 +316,65 @@ public class ProdutoService {
                             LOGGER.debug("Payload: {}", categoria);
                             LOGGER.debug("Categoria Existente: {}", categoria);
 
-                            categoriaExistente.setCodigoCategoria(resultado[8]);
-                            categoriaExistente.setNomeCategoria(resultado[9]);
+                            categoriaExistente.setCodigoCategoria(codigocategoria);
+                            categoriaExistente.setNomeCategoria(nomeCategoria);
                             categoriaExistente.setFornecedor(fornecedorService.findByFornecedorId(id));
                             iCategoriaRepository.save(categoria);
                         }
                     }
-                    if (!(iLinhaCategoriaRepository.existsByCodLinhaCategoria(resultado[6]))) {
-                        linhaCategoria.setCodLinhaCategoria(resultado[6]);
-                        linhaCategoria.setNomeLinha(resultado[7]);
-                        categoria = categoriaService.findByCodigoCategoria(resultado[8]);
+                    if (!(iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria))) {
+                        linhaCategoria.setCodLinhaCategoria(codLinhaCategoria);
+                        linhaCategoria.setNomeLinha(nomeLinha);
+                        categoria = categoriaService.findByCodigoCategoria(codigocategoria);
                         iLinhaCategoriaRepository.save(linhaCategoria);
 
-                    } else if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(resultado[6])) {
+                    } else if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria)) {
 
-                        linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(resultado[6]);
-                        Optional<LinhaCategoria> linhaCategoriaOptional = this.iLinhaCategoriaRepository.findByCodLinhaCategoria(resultado[6]);
+                        linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
+                        Optional<LinhaCategoria> linhaCategoriaOptional = this.iLinhaCategoriaRepository.findByCodLinhaCategoria(codLinhaCategoria);
                         LOGGER.info("Alterando linha... id:{}", linhaCategoria.getId());
                         LOGGER.debug("Payload: {}", linhaCategoria);
                         LOGGER.debug("Linha Categoria Existente: {}", linhaCategoria);
                         if (linhaCategoriaOptional.isPresent()) {
                             LinhaCategoria linhaExistente = linhaCategoriaOptional.get();
-                            linhaExistente.setCodLinhaCategoria(resultado[6]);
-                            linhaExistente.setNomeLinha(resultado[7]);
-                            categoria = categoriaService.findByCodigoCategoria(resultado[8]);
+                            linhaExistente.setCodLinhaCategoria(codLinhaCategoria);
+                            linhaExistente.setNomeLinha(nomeLinha);
+                            categoria = categoriaService.findByCodigoCategoria(codigocategoria);
                             iLinhaCategoriaRepository.save(linhaCategoria);
                         }
                     }
-                    if (iProdutoRepository.existsByCodProduto(resultado[0])) {
-                        produto = findByCodProduto(resultado[0]);
-                        Optional<Produto> produtoOptional = this.iProdutoRepository.findByCodProduto(resultado[0]);
+                    if (iProdutoRepository.existsByCodProduto(codProduto)) {
+                        produto = findByCodProduto(codProduto);
+                        Optional<Produto> produtoOptional = this.iProdutoRepository.findByCodProduto(codProduto);
                         LOGGER.info("Atualizando produto... id:[{}]", produto.getId());
                         LOGGER.debug("Payload: {}");
                         LOGGER.debug("produto Existente:{}", produto);
 
                         if (produtoOptional.isPresent()) {
                             Produto produtoExistente = produtoOptional.get();
-                            String data = resultado[5].toString();
-                            int dia = Integer.parseInt(data.substring(0, 2));
-                            int mes = Integer.parseInt(data.substring(3, 5));
-                            int ano = Integer.parseInt(data.substring(6, 10));
-                            LocalDate datavalidade = LocalDate.of(ano, mes, dia);
 
-                            produtoExistente.setCodProduto((resultado[0]));
-                            produtoExistente.setNome(resultado[1]);
-                            produtoExistente.setPreco(Double.parseDouble(resultado[2].trim().replace(',', '.').replaceAll("[A-Z$]", "")));
-                            produtoExistente.setUniCaixa(Integer.parseInt(resultado[3]));
-                            produtoExistente.setPesoUni(Double.parseDouble(resultado[4].replaceAll("[A-Za-z]", "")));
-                            produtoExistente.setUnidadeMedida(resultado[4].replaceAll("[0-9.]", ""));
+
+                            produtoExistente.setCodProduto(codProduto);
+                            produtoExistente.setNome(nomeProduto);
+                            produtoExistente.setPreco(preco);
+                            produtoExistente.setUniCaixa(uniCaixa);
+                            produtoExistente.setPesoUni(peso);
+                            produtoExistente.setUnidadeMedida(unimedida);
                             produtoExistente.setValidade(datavalidade);
-                            linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(resultado[6]);
+                            linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
 
                             System.out.println(produto);
                         }
-                    } else if (!iProdutoRepository.existsByCodProduto(resultado[0])) {
-                        String data = resultado[5].toString();
-                        int dia = Integer.parseInt(data.substring(0, 2));
-                        int mes = Integer.parseInt(data.substring(3, 5));
-                        int ano = Integer.parseInt(data.substring(6, 10));
-                        LocalDate datavalidade = LocalDate.of(ano, mes, dia);
+                    } else if (!iProdutoRepository.existsByCodProduto(codProduto)) {
 
-                        produto.setCodProduto((resultado[0]));
-                        produto.setNome(resultado[1]);
-                        produto.setPreco(Double.parseDouble(resultado[2].trim().replace(',', '.').replaceAll("[A-Z$]", "")));
-                        produto.setUniCaixa(Integer.parseInt(resultado[3]));
-                        produto.setPesoUni(Double.parseDouble(resultado[4].replaceAll("[A-Za-z]", "")));
-                        produto.setUnidadeMedida(resultado[4].replaceAll("[0-9.]", ""));
+                        produto.setCodProduto(codProduto);
+                        produto.setNome(nomeProduto);
+                        produto.setPreco(preco);
+                        produto.setUniCaixa(uniCaixa);
+                        produto.setPesoUni(peso);
+                        produto.setUnidadeMedida(unimedida);
                         produto.setValidade(datavalidade);
-                        linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(resultado[6]);
+                        linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
                         produto.setLinhaCategoria(linhaCategoria);
 
 
@@ -393,7 +390,6 @@ public class ProdutoService {
             }
         }
     }
-
 
 
     private void validate(ProdutoDTO produtoDTO) {

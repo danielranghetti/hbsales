@@ -132,7 +132,7 @@ public class LinhaCategoriaService {
     }
 
     //Faz a exportação
-    public void findAll(HttpServletResponse response) throws Exception {
+    public void csvToLinhaCategoriaExport(HttpServletResponse response) throws Exception {
         String nomeArquivo = "linhaCategorias.csv";
         response.setContentType("text/csv");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"");
@@ -172,24 +172,25 @@ public class LinhaCategoriaService {
                 Categoria categoria = new Categoria();
 
                 String codLinhacat = resultado[0];
-
-
+                String nomeLinha = resultado[1];
+                String codCategoria = resultado[2];
 
                 if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhacat)) {
                     LOGGER.info("Linha categoria: {}", codLinhacat + " já existe");
                 }
 
-                else if (iCategoriaRepository.existsByCodigoCategoria(resultado[2])) {
+                else if (iCategoriaRepository.existsByCodigoCategoria(codCategoria)) {
 
-                    linhaCategoria.setCodLinhaCategoria((resultado[0]));
-                    linhaCategoria.setNomeLinha(resultado[1]);
-                    categoria = categoriaService.findByCodigoCategoria(resultado[2]);
+                    linhaCategoria.setCodLinhaCategoria(codLinhacat);
+                    linhaCategoria.setNomeLinha(nomeLinha);
+                    categoria = categoriaService.findByCodigoCategoria(codCategoria);
 
                     linhaCategoria.setCategoria(categoria);
                     leitura.add(linhaCategoria);
                 }
 
-                 else if (!iLinhaCategoriaRepository.existsByCodLinhaCategoria(resultado[0])){
+                 else if (!iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhacat)){
+                    LOGGER.info("Linha categoria: {}", codLinhacat + " salvando");
                     linhaCategoria.setCategoria(categoria);
                     leitura.add(linhaCategoria);
 

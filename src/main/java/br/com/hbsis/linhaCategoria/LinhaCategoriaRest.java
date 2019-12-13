@@ -13,13 +13,14 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("/linhaCategorias")
 public class LinhaCategoriaRest {
 
-    private static final Logger LOGGER =LoggerFactory.getLogger(LinhaCategoriaRest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LinhaCategoriaRest.class);
     private final LinhaCategoriaService linhaCategoriaService;
 
     @Autowired
-    public  LinhaCategoriaRest(LinhaCategoriaService linhaCategoriaService){
+    public LinhaCategoriaRest(LinhaCategoriaService linhaCategoriaService) {
         this.linhaCategoriaService = linhaCategoriaService;
     }
+
     @PostMapping
     public LinhaCategoriaDTO save(@RequestBody LinhaCategoriaDTO linhaCategoriaDTO) {
         LOGGER.info("Recebendo solicitação de persistência de categoria...");
@@ -28,32 +29,35 @@ public class LinhaCategoriaRest {
         return this.linhaCategoriaService.save(linhaCategoriaDTO);
     }
 
-     @GetMapping("/{id}")
+    @GetMapping("/{id}")
     public LinhaCategoriaDTO find(@PathVariable("id") Long id) {
-
         LOGGER.info("Recebendo find by ID... id: [{}]", id);
 
         return this.linhaCategoriaService.findByid(id);
     }
+
     @PutMapping("/{id}")
-    public LinhaCategoriaDTO udpate(@PathVariable("id") Long id, @RequestBody LinhaCategoriaDTO linhaCategoriaDTO){
+    public LinhaCategoriaDTO udpate(@PathVariable("id") Long id, @RequestBody LinhaCategoriaDTO linhaCategoriaDTO) {
         LOGGER.info("Recebendo Update para categoria de ID: {}", id);
         LOGGER.debug("Payload: {}", linhaCategoriaDTO);
 
-        return this.linhaCategoriaService.update(linhaCategoriaDTO,id);
+        return this.linhaCategoriaService.update(linhaCategoriaDTO, id);
     }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") Long id) {
         LOGGER.info("Recebendo Delete para Usuário de ID: {}", id);
 
         this.linhaCategoriaService.delete(id);
     }
+
     @GetMapping("/exporta-csv-linhaCategorias")
     public void findAll(HttpServletResponse response) throws Exception {
-        linhaCategoriaService.findAll(response);
+        linhaCategoriaService.csvToLinhaCategoriaExport(response);
     }
+
     @PostMapping("/importa-csv-linhaCategorias")
-    public void importCSV(@RequestParam("file")MultipartFile file) throws Exception{
+    public void importCSV(@RequestParam("file") MultipartFile file) throws Exception {
         linhaCategoriaService.importFromCsvlinhaCategoria(file);
     }
 
