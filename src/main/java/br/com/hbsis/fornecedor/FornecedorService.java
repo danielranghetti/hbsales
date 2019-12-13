@@ -16,15 +16,10 @@ public class FornecedorService {
 
     private final IFornecedorRepository iFornecedorRepository;
 
-
     @Autowired
     public FornecedorService(IFornecedorRepository iFornecedorRepository) {
         this.iFornecedorRepository = iFornecedorRepository;
-
     }
-
-
-
 
     public FornecedorDTO save(FornecedorDTO fornecedorDTO) {
 
@@ -46,9 +41,7 @@ public class FornecedorService {
         return FornecedorDTO.of(fornecedor);
     }
 
-
-
-    private boolean validate(FornecedorDTO fornecedorDTO) {
+    private void validate(FornecedorDTO fornecedorDTO) {
         LOGGER.info("Validando Fornecedor");
         if (fornecedorDTO == null) {
             throw new IllegalArgumentException("FornecedorDTO não deve ser nulo");
@@ -60,13 +53,10 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getCnpj())) {
             throw new IllegalArgumentException("CNPJ não deve ser nulo/vazio");
         }
-        boolean validarCnpj = true;
-        if (!fornecedorDTO.getCnpj().matches("[0-9]*")) {
-            validarCnpj = false;
-            throw new IllegalArgumentException("CNPJ não deve conter letras");
-        }
-        String cnpjF = fornecedorDTO.getCnpj();
-        if (cnpjF.length() != 14) {
+
+        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getCnpj()));
+
+        if (fornecedorDTO.getCnpj().length() != 14) {
             throw new IllegalArgumentException("CNPJ deve conter 14 números");
         }
         if (StringUtils.isEmpty(fornecedorDTO.getNomeFantasia())) {
@@ -78,21 +68,15 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getTelefone())) {
             throw new IllegalArgumentException("Telefone não deve ser nulo/vazio");
         }
-        boolean validarTelefone = true;
-        if (!fornecedorDTO.getTelefone().matches("[0-9]*")) {
-            validarTelefone = false;
-            throw new IllegalArgumentException("Telefone não deve conter letras");
-        }
-        String telefoneF = fornecedorDTO.getTelefone();
-        if (telefoneF.length() !=12) {
-            throw new IllegalArgumentException("Telefone deve conter 12 números");
-
+        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getTelefone()));
+        if (fornecedorDTO.getTelefone().length() > 14 || fornecedorDTO.getTelefone().length() < 13) {
+            throw new IllegalArgumentException("Telefone deve conter entre 13 e 14 números");
         }
         if (StringUtils.isEmpty(fornecedorDTO.geteMail())) {
             throw new IllegalArgumentException("E-mail não deve ser nulo/vazio");
         }
 
-      return validarCnpj;
+
     }
 
     public FornecedorDTO findById(Long id) {
@@ -114,6 +98,7 @@ public class FornecedorService {
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
+
     public Fornecedor findByFornecedorCnpj(String cnpj) {
         Optional<Fornecedor> fornecedorOptional = this.iFornecedorRepository.findByCnpj(cnpj);
 
@@ -123,17 +108,14 @@ public class FornecedorService {
 
         throw new IllegalArgumentException(String.format("cnpj %s não existe", cnpj));
     }
-    public Fornecedor findFornecedorEntityById(Long id){
 
-        Optional<Fornecedor> fornecedor = this.iFornecedorRepository.findById(id);
-        if(fornecedor.isPresent()){
-            return fornecedor.get();
-        }
-        throw new IllegalArgumentException(String.format("Fornecedor ID %s não existe.", id));
-    }
+    // TODO: 12/12/2019 Remover código que não está sendo usado
+
 
     public FornecedorDTO update(FornecedorDTO fornecedorDTO, Long id) {
         Optional<Fornecedor> fornecedorExistenteOptional = this.iFornecedorRepository.findById(id);
+        // TODO: 12/12/2019 recalcular o código das categorias deste fornecedor quando o fornecedor for atualizado
+        this.validate(fornecedorDTO);
 
         if (fornecedorExistenteOptional.isPresent()) {
             Fornecedor fornecedorExistente = fornecedorExistenteOptional.get();
@@ -164,10 +146,9 @@ public class FornecedorService {
 
         this.iFornecedorRepository.deleteById(id);
     }
-    String codCat;
-    public String ultimosDigCnpj(FornecedorDTO fornecedorDTO){
-        fornecedorDTO.getCnpj().substring(fornecedorDTO.getCnpj().length()-4);
-        return codCat;
-    }
+
+
+    // TODO: 12/12/2019 remover código que não está sendo usado
+
 }
 

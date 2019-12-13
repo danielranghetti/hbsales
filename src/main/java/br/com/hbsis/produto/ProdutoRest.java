@@ -53,12 +53,17 @@ public class ProdutoRest {
     public void findAll(HttpServletResponse response) throws Exception{
         produtoService.findAll(response);
     }
+    @GetMapping("/exporta-csvproduto-fornecedor")
+    public void findAllFornecedor(HttpServletResponse response) throws  Exception{
+        produtoService.findAllFornecedor(response);
+    }
     @PostMapping("/importa-csv-produtos")
     public void  importCSV(@RequestParam("file")MultipartFile file) throws Exception{
-        produtoService.saveAll(produtoService.reaAll(file));
+        produtoService.reaAll(file);
     }
-    @PutMapping("/importa-produto-fornecefor/{id}")
-    public void importCSVFornecedor(@PathVariable("id") Long id, @RequestParam("file") MultipartFile file ) throws Exception {
-        produtoService.importaProdutoPorFornecedor(id,file);
+    @PostMapping("/importa-csv-produtos-fornecedor/{id}")
+    public void  importCSVFornecedor(@PathVariable("id") Long id ,@RequestParam("file")MultipartFile file) throws Exception{
+        produtoService.importaProdutoFornecedor(id ,file);
     }
+
 }

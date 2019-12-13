@@ -87,8 +87,6 @@ public class FornecedorDTO {
         this.eMail = eMail;
     }
 
-
-
     @Override
     public String toString() {
         return "FornecedorDTO{" +

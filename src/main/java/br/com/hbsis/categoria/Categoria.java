@@ -1,12 +1,9 @@
 package br.com.hbsis.categoria;
 
 
-
-
 import br.com.hbsis.fornecedor.Fornecedor;
 
 import javax.persistence.*;
-import java.util.List;
 
 
 @Entity
@@ -14,21 +11,14 @@ import java.util.List;
 public  class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    //@CsvBindByName(column = "id_categoria")
     private  Long id;
-    //@CsvBindByName(column = "codigo_categoria")
     @Column(name = "codigo_categoria", unique = true, nullable = false, length = 255)
     private String codigoCategoria;
-    //@CsvBindByName(column = "nome_categoria")
     @Column(name = "nome_categoria", unique = true, nullable = false, length = 255)
     private String nomeCategoria;
     @ManyToOne
     @JoinColumn(name = "id_fornecedor", referencedColumnName = "id")
     private Fornecedor fornecedor;
-
-
-
-
 
     public Fornecedor getFornecedor() {
         return fornecedor;
@@ -63,17 +53,13 @@ public  class Categoria {
     }
 
 
-
     @Override
     public String toString() {
         return "Categoria{" +
                 "id=" + id +
-                ", id_fornecedor=" + fornecedor +
-                ", codigoCategoria=" + codigoCategoria +
+                ", codigoCategoria='" + codigoCategoria + '\'' +
                 ", nomeCategoria='" + nomeCategoria + '\'' +
+                ", fornecedor=" + fornecedor +
                 '}';
     }
-
-
-
 }

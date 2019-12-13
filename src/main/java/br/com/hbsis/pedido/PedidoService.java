@@ -18,6 +18,7 @@ public class PedidoService {
     private final IPedidoRepository iPedidoRepository;
     private final FuncionarioService funcionarioService;
 
+    TODO: 13/12/2019 se não está sendo utilizado, corta fora
     private  final PeriodoVendaService periodoVendaService;
     private  final ProdutoService produtoService;
 

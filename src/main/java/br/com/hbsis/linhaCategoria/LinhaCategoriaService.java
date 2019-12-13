@@ -8,7 +8,6 @@ import br.com.hbsis.categoria.ICategoriaRepository;
 import br.com.hbsis.fornecedor.FornecedorService;
 import com.opencsv.*;
 import org.apache.commons.lang.StringUtils;
-import org.omg.CORBA.SetOverrideType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -97,12 +96,12 @@ public class LinhaCategoriaService {
             return optionalLinhaCategoria.get();
         }
 
-        throw new IllegalArgumentException(String.format("ID %s don't exist", codLinhaCategoria));
+        throw new IllegalArgumentException(String.format("codigo  %s don't exist", codLinhaCategoria));
     }
 
     public LinhaCategoriaDTO update(LinhaCategoriaDTO linhaCategoriaDTO, Long id) {
         Optional<LinhaCategoria> linhaCategoriaExistenteOptional = this.iLinhaCategoriaRepository.findById(id);
-
+            this.validate(linhaCategoriaDTO);
         if (linhaCategoriaExistenteOptional.isPresent()) {
             LinhaCategoria linhaCategoriaExistente = linhaCategoriaExistenteOptional.get();
 
@@ -154,7 +153,7 @@ public class LinhaCategoriaService {
     }
 
     //faz a importação
-    public List<LinhaCategoria> readAll(MultipartFile multipartFile) throws Exception {
+    public List<LinhaCategoria> csvToLinhaCategoria(MultipartFile multipartFile) throws Exception {
         InputStreamReader inputStreamReader = new InputStreamReader(multipartFile.getInputStream());
 
         CSVReader csvReader = new CSVReaderBuilder(inputStreamReader)
@@ -171,10 +170,13 @@ public class LinhaCategoriaService {
 
                 LinhaCategoria linhaCategoria = new LinhaCategoria();
                 Categoria categoria = new Categoria();
-                CategoriaDTO categoriaDTO = new CategoriaDTO();
 
-                if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(resultado[0])) {
-                    LOGGER.info("Linha categoria: {}", resultado[0] + " já existe");
+                String codLinhacat = resultado[0];
+
+
+
+                if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhacat)) {
+                    LOGGER.info("Linha categoria: {}", codLinhacat + " já existe");
                 }
 
                 else if (iCategoriaRepository.existsByCodigoCategoria(resultado[2])) {
@@ -200,6 +202,10 @@ public class LinhaCategoriaService {
         }
         return iLinhaCategoriaRepository.saveAll(leitura);
     }
+    public void importFromCsvlinhaCategoria(MultipartFile file) throws Exception {
+        List<LinhaCategoria> linhaCategorias = this.csvToLinhaCategoria(file);
+        this.saveAll(linhaCategorias);
+    }
 
     private void validate(LinhaCategoriaDTO linhaCategoriaDTO) {
         LOGGER.info("Validando linha da categoria");
@@ -207,7 +213,7 @@ public class LinhaCategoriaService {
             throw new IllegalArgumentException("LinhaCategoriaDTO não deve ser nulo");
         }
         if (StringUtils.isEmpty(linhaCategoriaDTO.getCodLinhaCategoria())) {
-            throw new IllegalArgumentException("Codigo da linga categoria não deve ser nulo");
+            throw new IllegalArgumentException("Codigo da linha categoria não deve ser nulo");
         }
         if (StringUtils.isEmpty(linhaCategoriaDTO.getNomeLinha())) {
             throw new IllegalArgumentException("Nome linha categoria não dve ser nulo");

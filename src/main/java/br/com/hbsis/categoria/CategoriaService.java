@@ -1,15 +1,14 @@
 package br.com.hbsis.categoria;
 
 import br.com.hbsis.fornecedor.Fornecedor;
-import br.com.hbsis.fornecedor.FornecedorDTO;
 import br.com.hbsis.fornecedor.FornecedorService;
 import br.com.hbsis.fornecedor.IFornecedorRepository;
 import com.opencsv.*;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -60,15 +59,14 @@ public class CategoriaService {
         }
 
     }
+
     public String mascaraCnpj(String CNPJ){
     String mascara = CNPJ.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
     return mascara;
     }
 
-
-
     //faz a importação
-    public List<Categoria> readAll(MultipartFile file) throws Exception {
+    public List<Categoria> csvToCategoria(MultipartFile file) throws Exception {
         InputStreamReader inputStreamReader = new InputStreamReader(file.getInputStream());
 
         CSVReader csvReader = new CSVReaderBuilder(inputStreamReader)
@@ -85,28 +83,34 @@ public class CategoriaService {
 
                 Categoria categoria = new Categoria();
                 Fornecedor fornecedor = new Fornecedor();
-                FornecedorDTO fornecedorDTO = new FornecedorDTO();
+                // TODO: 12/12/2019 remover código que não está sendo usado
+                String codigoCategoria = resultado[0];
+                String cnpj = resultado[3].replaceAll("[^0-9]", "");
+                String nomeCategoria = resultado[1];
 
-                if (iCategoriaRepository.existsByCodigoCategoria(resultado[0])){
-                    LOGGER.info("Categoria: {}", resultado[0] + " já existe");
+                if (iCategoriaRepository.existsByCodigoCategoria(codigoCategoria)){
+                    LOGGER.info("Categoria: {}", codigoCategoria + " já existe");
                 }
-                else if (iFornecedorRepository.existsByCnpj(resultado[3].replaceAll("[^0-9]",""))) {
+                else {
+                    if (iFornecedorRepository.existsByCnpj(cnpj)) {
 
-                    categoria.setCodigoCategoria((resultado[0]));
-                    categoria.setNomeCategoria((resultado[1]));
-                    fornecedor = fornecedorService.findByFornecedorCnpj(resultado[3].replaceAll("[^0-9]", ""));
+                        categoria.setCodigoCategoria(codigoCategoria);
+                        categoria.setNomeCategoria(nomeCategoria);
+                        fornecedor = fornecedorService.findByFornecedorCnpj(cnpj);
 
-                    categoria.setFornecedor(fornecedor);
-                    leitura.add(categoria);
+                        categoria.setFornecedor(fornecedor);
+                        leitura.add(categoria);
+                    }
+                    else if (!iCategoriaRepository.existsByCodigoCategoria(codigoCategoria)){
+                        categoria.setCodigoCategoria(codigoCategoria);
+                        categoria.setNomeCategoria(nomeCategoria);
+                        fornecedor = fornecedorService.findByFornecedorCnpj(cnpj);
+
+                        categoria.setFornecedor(fornecedor);
+                        leitura.add(categoria);
+                    }
                 }
-                else if (!iCategoriaRepository.existsByCodigoCategoria((resultado[0]))){
-                    categoria.setCodigoCategoria((resultado[0]));
-                    categoria.setNomeCategoria((resultado[1]));
-                    fornecedor = fornecedorService.findByFornecedorCnpj(resultado[3].replaceAll("[^0-9]", ""));
 
-                    categoria.setFornecedor(fornecedor);
-                    leitura.add(categoria);
-                }
 
 
             } catch (Exception e) {
@@ -116,12 +120,15 @@ public class CategoriaService {
         return iCategoriaRepository.saveAll(leitura);
     }
 
+    public void importFromCsv(MultipartFile file) throws Exception {
+        List<Categoria> categorias = this.csvToCategoria(file);
+        this.saveAll(categorias);
+    }
 
     public List<Categoria> saveAll(List<Categoria> categoria) throws Exception {
 
         return iCategoriaRepository.saveAll(categoria);
     }
-
 
     public CategoriaDTO save(CategoriaDTO categoriaDTO) {
         this.validate(categoriaDTO);
@@ -147,7 +154,6 @@ public class CategoriaService {
         return CategoriaDTO.of(categoria);
     }
 
-
     public String codigoValidar (String codigo){
         String codigoProcessador = StringUtils.leftPad(codigo, 3, "0");
         return codigoProcessador;
@@ -168,7 +174,11 @@ public class CategoriaService {
         if (StringUtils.isEmpty(categoriaDTO.getCodigoCategoria())) {
             throw new IllegalArgumentException("Codigo categoria não deve ser nulo");
         }
-    }
+        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(categoriaDTO.getCodigoCategoria()));
+
+
+
+        }
 
     public CategoriaDTO findById(Long id) {
         Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findById(id);
@@ -233,4 +243,6 @@ public class CategoriaService {
 
         this.iCategoriaRepository.deleteById(id);
     }
+
+
 }

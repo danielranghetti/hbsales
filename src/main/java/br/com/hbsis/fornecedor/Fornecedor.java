@@ -1,18 +1,7 @@
 package br.com.hbsis.fornecedor;
 
 
-
-
-
-
-
-
-import br.com.hbsis.categoria.Categoria;
-
 import javax.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity
@@ -34,13 +23,6 @@ import java.util.List;
     private String telefone;
     @Column(name = "e_mail", nullable = false, length = 50)
     private String eMail;
-    @OneToMany(cascade =CascadeType.ALL,mappedBy = "fornecedor")
-
-    private List<Categoria> categorias = new ArrayList<Categoria>();
-
-    public List<Categoria> getCategorias() { return categorias; }
-
-    public void setCategorias(List<Categoria> categorias) { this.categorias = categorias; }
 
     public void setId(Long id) {
         this.id = id;
@@ -108,9 +90,6 @@ import java.util.List;
                 ", endereco='" + endereco + '\'' +
                 ", telefone='" + telefone + '\'' +
                 ", eMail='" + eMail + '\'' +
-                ", categorias=" + categorias +
                 '}';
     }
-
-
 }
