@@ -1,18 +1,7 @@
 package br.com.hbsis.fornecedor;
 
 
-
-
-
-
-
-
-import br.com.hbsis.categoria.Categoria;
-
 import javax.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity
@@ -22,25 +11,18 @@ import java.util.List;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "razao_social", unique = true, nullable = false, length = 255)
+    @Column(name = "razao_social", unique = true, nullable = false, length = 100)
     private String razaoSocial;
-    @Column(name = "cnpj", unique = true, nullable = false, length = 25)
+    @Column(name = "cnpj", unique = true, nullable = false, length = 14)
     private String cnpj;
-    @Column(name = "nome_fantasia", nullable = false, length = 255)
+    @Column(name = "nome_fantasia", nullable = false, length = 100)
     private String nomeFantasia;
-    @Column(name = "endereco", nullable = false, length = 255)
+    @Column(name = "endereco", nullable = false, length = 100)
     private String endereco;
-    @Column(name = "telefone", unique = true, nullable = false, length = 255)
+    @Column(name = "telefone", unique = true, nullable = false, length = 12)
     private String telefone;
-    @Column(name = "e_mail", nullable = false, length = 255)
+    @Column(name = "e_mail", nullable = false, length = 50)
     private String eMail;
-    @OneToMany(cascade =CascadeType.ALL,mappedBy = "fornecedor")
-
-    private List<Categoria> categorias = new ArrayList<Categoria>();
-
-    public List<Categoria> getCategorias() { return categorias; }
-
-    public void setCategorias(List<Categoria> categorias) { this.categorias = categorias; }
 
     public void setId(Long id) {
         this.id = id;
@@ -108,7 +90,6 @@ import java.util.List;
                 ", endereco='" + endereco + '\'' +
                 ", telefone='" + telefone + '\'' +
                 ", eMail='" + eMail + '\'' +
-                ", categorias=" + categorias +
                 '}';
     }
 }

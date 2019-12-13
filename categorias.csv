@@ -1,5 +1,5 @@
-id_categoria;codigo_categoria;nome_categoria;id_fornecedor
-6;236;cerva;2
-7;1236;cerva;3
-8;256;agua;3
-9;56;agua;2
+"codigo_categoria";";nome_categoria";"razao_social_fornecedor";";cnpj_fornecedor "
+"CAT2379006";"insumo";"Daniel";"12.345.678/9123-79"
+"CAT2379008";"cerveja";"Daniel";"12.345.678/9123-79"
+"CAT5647001";"cerveja";"Rafael";"98.765.432/1956-47"
+"CAT564710i";"insumo";"Rafael";"98.765.432/1956-47"

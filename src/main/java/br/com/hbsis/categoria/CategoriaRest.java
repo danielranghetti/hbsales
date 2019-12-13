@@ -24,9 +24,7 @@ public class CategoriaRest {
 
     @PostMapping("/importa-csv-categorias")
     public void importCSV(@RequestParam("file") MultipartFile file) throws Exception {
-        categoriaService.saveAll(categoriaService.readAll(file));
-
-
+        categoriaService.importFromCsv(file);
     }
 
     @PostMapping

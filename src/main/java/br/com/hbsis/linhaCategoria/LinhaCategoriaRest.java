@@ -54,7 +54,7 @@ public class LinhaCategoriaRest {
     }
     @PostMapping("/importa-csv-linhaCategorias")
     public void importCSV(@RequestParam("file")MultipartFile file) throws Exception{
-        linhaCategoriaService.saveAll(linhaCategoriaService.readAll(file));
+        linhaCategoriaService.importFromCsvlinhaCategoria(file);
     }
 
 

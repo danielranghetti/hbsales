@@ -53,6 +53,12 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getCnpj())) {
             throw new IllegalArgumentException("CNPJ não deve ser nulo/vazio");
         }
+
+        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getCnpj()));
+
+        if (fornecedorDTO.getCnpj().length() != 14) {
+            throw new IllegalArgumentException("CNPJ deve conter 14 números");
+        }
         if (StringUtils.isEmpty(fornecedorDTO.getNomeFantasia())) {
             throw new IllegalArgumentException("Nome fantasia não deve ser nulo/vazio");
         }
@@ -62,9 +68,14 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getTelefone())) {
             throw new IllegalArgumentException("Telefone não deve ser nulo/vazio");
         }
+        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getTelefone()));
+        if (fornecedorDTO.getTelefone().length() > 14 || fornecedorDTO.getTelefone().length() < 13) {
+            throw new IllegalArgumentException("Telefone deve conter entre 13 e 14 números");
+        }
         if (StringUtils.isEmpty(fornecedorDTO.geteMail())) {
             throw new IllegalArgumentException("E-mail não deve ser nulo/vazio");
         }
+
 
     }
 
@@ -88,8 +99,23 @@ public class FornecedorService {
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
+    public Fornecedor findByFornecedorCnpj(String cnpj) {
+        Optional<Fornecedor> fornecedorOptional = this.iFornecedorRepository.findByCnpj(cnpj);
+
+        if (fornecedorOptional.isPresent()) {
+            return fornecedorOptional.get();
+        }
+
+        throw new IllegalArgumentException(String.format("cnpj %s não existe", cnpj));
+    }
+
+    // TODO: 12/12/2019 Remover código que não está sendo usado
+
+
     public FornecedorDTO update(FornecedorDTO fornecedorDTO, Long id) {
         Optional<Fornecedor> fornecedorExistenteOptional = this.iFornecedorRepository.findById(id);
+        // TODO: 12/12/2019 recalcular o código das categorias deste fornecedor quando o fornecedor for atualizado
+        this.validate(fornecedorDTO);
 
         if (fornecedorExistenteOptional.isPresent()) {
             Fornecedor fornecedorExistente = fornecedorExistenteOptional.get();
@@ -120,5 +146,9 @@ public class FornecedorService {
 
         this.iFornecedorRepository.deleteById(id);
     }
+
+
+    // TODO: 12/12/2019 remover código que não está sendo usado
+
 }
 

@@ -12,7 +12,7 @@ public class LinhaCategoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "cod_linha_categoria_", nullable = false, length = 255)
-    private  Long codLinhaCategoria;
+    private  String codLinhaCategoria;
     @Column(name = "nome_linha",nullable = false,length = 255)
     private String nomeLinha;
     @ManyToOne
@@ -27,11 +27,11 @@ public class LinhaCategoria {
         this.id = id;
     }
 
-    public Long getCodLinhaCategoria() {
+    public String getCodLinhaCategoria() {
         return codLinhaCategoria;
     }
 
-    public void setCodLinhaCategoria(Long codLinhaCategoria) {
+    public void setCodLinhaCategoria(String codLinhaCategoria) {
         this.codLinhaCategoria = codLinhaCategoria;
     }
 
@@ -55,7 +55,7 @@ public class LinhaCategoria {
     public String toString() {
         return "linhaCategoria{" +
                 "id=" + id +
-                ", id_categoria=" + categoria +
+                ", categoria=" + categoria +
                 ", codLinhaCategoria=" + codLinhaCategoria +
                 ", nomeLinha='" + nomeLinha + '\'' +
                 '}';
