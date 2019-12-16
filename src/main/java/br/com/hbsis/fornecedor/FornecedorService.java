@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import sun.security.x509.X500Name;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +65,9 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getCnpj())) {
             throw new IllegalArgumentException("CNPJ não deve ser nulo/vazio");
         }
-
-        //org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getCnpj()));
+        if (!(StringUtils.isNumeric(fornecedorDTO.getCnpj()))){
+            throw  new IllegalArgumentException("Cnpj não deve conter letras somente números");
+        }
 
         if (fornecedorDTO.getCnpj().length() != 14) {
             throw new IllegalArgumentException("CNPJ deve conter 14 números");
@@ -79,15 +81,15 @@ public class FornecedorService {
         if (StringUtils.isEmpty(fornecedorDTO.getTelefone())) {
             throw new IllegalArgumentException("Telefone não deve ser nulo/vazio");
         }
-        //org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(fornecedorDTO.getTelefone()));
+        if (!(StringUtils.isNumeric(fornecedorDTO.getTelefone()))){
+            throw new IllegalArgumentException("Telefone deve conter letras apenas números");
+        }
         if (fornecedorDTO.getTelefone().length() > 14 || fornecedorDTO.getTelefone().length() < 13) {
             throw new IllegalArgumentException("Telefone deve conter entre 13 e 14 números");
         }
         if (StringUtils.isEmpty(fornecedorDTO.geteMail())) {
             throw new IllegalArgumentException("E-mail não deve ser nulo/vazio");
         }
-
-
     }
 
     public FornecedorDTO findById(Long id) {
