@@ -363,6 +363,7 @@ public class ProdutoService {
                             produtoExistente.setUnidadeMedida(unimedida);
                             produtoExistente.setValidade(datavalidade);
                             produtoExistente.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
+                            iProdutoRepository.save(produtoExistente);
 
                             System.out.println(produtoExistente);
                         }
@@ -387,6 +388,8 @@ public class ProdutoService {
             }
         }
     }
+
+
 
 
     private void validate(ProdutoDTO produtoDTO) {

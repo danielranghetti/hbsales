@@ -4,6 +4,7 @@ import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.CategoriaDTO;
 import br.com.hbsis.categoria.CategoriaService;
 import br.com.hbsis.categoria.ICategoriaRepository;
+import com.sun.xml.bind.v2.TODO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +83,7 @@ public class FornecedorService {
             throw new IllegalArgumentException("Telefone não deve ser nulo/vazio");
         }
         if (!(StringUtils.isNumeric(fornecedorDTO.getTelefone()))){
-            throw new IllegalArgumentException("Telefone deve conter letras apenas números");
+            throw new IllegalArgumentException("Telefone não deve conter letras apenas números");
         }
         if (fornecedorDTO.getTelefone().length() > 14 || fornecedorDTO.getTelefone().length() < 13) {
             throw new IllegalArgumentException("Telefone deve conter entre 13 e 14 números");
@@ -168,6 +169,7 @@ public class FornecedorService {
         this.iFornecedorRepository.deleteById(id);
     }
     // TODO: 12/12/2019 remover código que não está sendo usado
+
 
 
 }

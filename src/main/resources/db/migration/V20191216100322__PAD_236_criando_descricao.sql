@@ -1,0 +1,1 @@
+ALTER TABLE seg_periodo_venda ADD descricao VARCHAR(50) NOT NULL;
