@@ -11,17 +11,19 @@ public class PeriodoVendaDTO {
     private LocalDate dataInicio;
     private LocalDate dataFinal;
     private LocalDate dataRetirada;
+    private String descricao;
     private Long fornecedor;
 
     public PeriodoVendaDTO() {
     }
 
-    public PeriodoVendaDTO(Long id, LocalDate dataInicio, LocalDate dataFinal, LocalDate dataRetirada, Long fornecedor) {
+    public PeriodoVendaDTO(Long id, LocalDate dataInicio, LocalDate dataFinal, LocalDate dataRetirada, Long fornecedor, String descricao) {
         this.id = id;
         this.dataInicio = dataInicio;
         this.dataFinal = dataFinal;
         this.dataRetirada = dataRetirada;
         this.fornecedor = fornecedor;
+        this.descricao = descricao;
     }
 
     public static PeriodoVendaDTO of(PeriodoVenda periodoVenda) {
@@ -30,7 +32,8 @@ public class PeriodoVendaDTO {
                 periodoVenda.getDataInicio(),
                 periodoVenda.getDataFinal(),
                 periodoVenda.getDataRetirada(),
-                periodoVenda.getFornecedor().getId()
+                periodoVenda.getFornecedor().getId(),
+                periodoVenda.getDescricao()
         );
     }
 
@@ -74,6 +77,14 @@ public class PeriodoVendaDTO {
         this.fornecedor = fornecedor;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
     @Override
     public String toString() {
         return "PeriodoVendaDTO{" +
@@ -81,6 +92,7 @@ public class PeriodoVendaDTO {
                 ", dataInicio=" + dataInicio +
                 ", dataFinal=" + dataFinal +
                 ", dataRetirada=" + dataRetirada +
+                ", descricao='" + descricao + '\'' +
                 ", fornecedor=" + fornecedor +
                 '}';
     }

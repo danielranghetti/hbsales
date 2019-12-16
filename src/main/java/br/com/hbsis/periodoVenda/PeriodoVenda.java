@@ -17,6 +17,8 @@ public class PeriodoVenda {
     private LocalDate dataFinal;
     @Column(name = "data_retirada", nullable = false, length = 255)
     private LocalDate dataRetirada;
+    @Column (name = "descricao",length = 50)
+    private String descricao;
     @ManyToOne
     @JoinColumn(name = "id_fornecedor", referencedColumnName = "id")
     private Fornecedor fornecedor;
@@ -61,6 +63,14 @@ public class PeriodoVenda {
         this.fornecedor = fornecedor;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
     @Override
     public String toString() {
         return "PeriodoVenda{" +
@@ -68,6 +78,7 @@ public class PeriodoVenda {
                 ", dataInicio=" + dataInicio +
                 ", dataFinal=" + dataFinal +
                 ", dataRetirada=" + dataRetirada +
+                ", descricao='" + descricao + '\'' +
                 ", fornecedor=" + fornecedor +
                 '}';
     }
