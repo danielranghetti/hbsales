@@ -1,11 +1,14 @@
 package br.com.hbsis.funcionario;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.omg.CORBA.WrongTransactionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class FuncionarioService {
@@ -30,6 +33,7 @@ public class FuncionarioService {
         funcionario.setId(funcionarioDTO.getId());
         funcionario.seteMail(funcionarioDTO.geteMail());
         funcionario.setNomeFun(funcionarioDTO.getNomeFun());
+        funcionario.setUuid(UUID.randomUUID().toString());
 
         funcionario = this.iFuncionarioRepository.save(funcionario);
         return funcionarioDTO.of(funcionario);
@@ -41,6 +45,15 @@ public class FuncionarioService {
 
         if (funcionarioDTO == null){
             throw new  IllegalArgumentException("FuncionarioDTO não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(funcionarioDTO.getNomeFun())){
+            throw new IllegalArgumentException("O nome do funcionário não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(funcionarioDTO.geteMail())){
+            throw new  IllegalArgumentException("O e-mail não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(funcionarioDTO.getUuid())){
+            throw new IllegalArgumentException("UUID do funcionário não deve ser nulo");
         }
     }
     public  FuncionarioDTO findById(Long id){
@@ -82,10 +95,9 @@ public class FuncionarioService {
     }
     public  void delete(Long id){
         LOGGER.info("Executenado o delete para funcionário de ID: [{}]", id);
-
         this.iFuncionarioRepository.deleteById(id);
-
     }
+
 
 
 }
