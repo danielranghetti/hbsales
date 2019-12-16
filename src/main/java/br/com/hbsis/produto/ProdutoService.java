@@ -300,11 +300,12 @@ public class ProdutoService {
                 String nomeCategoria = resultado[9];
 
                 if (iFornecedorRepository.existsById(id)) {
-                    if (!(iCategoriaRepository.existsByCodigoCategoria(codigocategoria))) {
+                    if (!iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
                         categoria.setFornecedor(fornecedorService.findByFornecedorId(id));
                         iCategoriaRepository.save(categoria);
+
                     } else if (iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
                         categoria = categoriaService.findByCodigoCategoria(codigocategoria);
                         Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findByCodigoCategoria(codigocategoria);
@@ -313,19 +314,19 @@ public class ProdutoService {
                             Categoria categoriaExistente = categoriaOptional.get();
                             LOGGER.info("Alterando Categoria... id:{}", categoria.getId());
 
-                            LOGGER.debug("Payload: {}", categoria);
+                            LOGGER.debug("Payload: {}");
                             LOGGER.debug("Categoria Existente: {}", categoria);
 
                             categoriaExistente.setCodigoCategoria(codigocategoria);
                             categoriaExistente.setNomeCategoria(nomeCategoria);
                             categoriaExistente.setFornecedor(fornecedorService.findByFornecedorId(id));
-                            iCategoriaRepository.save(categoria);
+                            iCategoriaRepository.save(categoriaExistente);
                         }
                     }
                     if (!(iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria))) {
                         linhaCategoria.setCodLinhaCategoria(codLinhaCategoria);
                         linhaCategoria.setNomeLinha(nomeLinha);
-                        categoria = categoriaService.findByCodigoCategoria(codigocategoria);
+                        linhaCategoria.setCategoria(categoriaService.findByCodigoCategoria(codigocategoria));
                         iLinhaCategoriaRepository.save(linhaCategoria);
 
                     } else if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria)) {
@@ -339,15 +340,15 @@ public class ProdutoService {
                             LinhaCategoria linhaExistente = linhaCategoriaOptional.get();
                             linhaExistente.setCodLinhaCategoria(codLinhaCategoria);
                             linhaExistente.setNomeLinha(nomeLinha);
-                            categoria = categoriaService.findByCodigoCategoria(codigocategoria);
-                            iLinhaCategoriaRepository.save(linhaCategoria);
+                            linhaCategoria.setCategoria(categoriaService.findByCodigoCategoria(codigocategoria));
+                            iLinhaCategoriaRepository.save(linhaExistente);
                         }
                     }
                     if (iProdutoRepository.existsByCodProduto(codProduto)) {
                         produto = findByCodProduto(codProduto);
                         Optional<Produto> produtoOptional = this.iProdutoRepository.findByCodProduto(codProduto);
                         LOGGER.info("Atualizando produto... id:[{}]", produto.getId());
-                        LOGGER.debug("Payload: {}");
+                        LOGGER.debug("Payload: {}", produto);
                         LOGGER.debug("produto Existente:{}", produto);
 
                         if (produtoOptional.isPresent()) {
@@ -361,9 +362,9 @@ public class ProdutoService {
                             produtoExistente.setPesoUni(peso);
                             produtoExistente.setUnidadeMedida(unimedida);
                             produtoExistente.setValidade(datavalidade);
-                            linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
+                            produtoExistente.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
 
-                            System.out.println(produto);
+                            System.out.println(produtoExistente);
                         }
                     } else if (!iProdutoRepository.existsByCodProduto(codProduto)) {
 
@@ -374,16 +375,12 @@ public class ProdutoService {
                         produto.setPesoUni(peso);
                         produto.setUnidadeMedida(unimedida);
                         produto.setValidade(datavalidade);
-                        linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
-                        produto.setLinhaCategoria(linhaCategoria);
-
+                        produto.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
 
                         iProdutoRepository.save(produto);
                     } else {
                         LOGGER.info("Produto {} Pretence a outro Fornecedor", produto.getId());
                     }
-
-
                 }
             } catch (Exception e) {
                 e.printStackTrace();

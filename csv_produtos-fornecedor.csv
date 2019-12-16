@@ -1,3 +1,4 @@
-código;nome;preço;quantidade de unidades por caixa;peso ;validade; código da linha de categoria;nome da Linha de Categoria;código da Categoria;nome categoria
-0000000SKL;skol puro Malte;R$2.55;25;650.5g;06/12/2019;00000000SK;Skol;CAT6725008;Cerveja
-0000000STL;Stella long;R$3.98;6;650.0g;25/12/2019;00000000ST;Stella;CAT6725008;Cerveja
+"código";"nome";"preço";"quantidade de unidades por caixa";"peso ";"validade";" código da linha de categoria";"nome da Linha de Categoria";"código da Categoria";"nome categoria"
+"0000000STL";"Stella long";"R$3.98";"6";"650.0g";"25/12/2019";"00000000ST";"Stella";"CAT0555008";"Cerveja"
+"0000DSADSA";"skol puro Malte";"R$2.52";"12";"650.5g";"06/12/2019";"00000000SK";"Skol";"CAT0555008";"Cerveja"
+"0000000SKL";"skol puro Malte";"R$2.55";"25";"650.5g";"06/12/2019";"00000000SK";"Skol";"CAT0555008";"Cerveja"
