@@ -8,10 +8,12 @@ public class Funcionario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "nome", nullable = false, length = 255)
+    @Column(name = "nome", nullable = false, length = 50)
     private String nomeFun;
-    @Column(name = "e_mail", nullable = false, length = 255)
+    @Column(name = "e_mail", nullable = false, length = 50)
     private String eMail;
+    @Column(name = "uuid", unique = true, updatable = false, length = 36)
+    private String uuid;
 
     public Long getId() {
         return id;
@@ -37,12 +39,21 @@ public class Funcionario {
         this.eMail = eMail;
     }
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
     @Override
     public String toString() {
         return "Funcionario{" +
                 "id=" + id +
                 ", nomeFun='" + nomeFun + '\'' +
                 ", eMail='" + eMail + '\'' +
+                ", uuid='" + uuid + '\'' +
                 '}';
     }
 }

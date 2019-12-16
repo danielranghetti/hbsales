@@ -5,22 +5,33 @@ public class FuncionarioDTO {
     private  Long id;
     private String nomeFun;
     private  String eMail;
+    private String uuid;
 
     public FuncionarioDTO() {
     }
 
-    public FuncionarioDTO(Long id, String nomeFun, String eMail) {
+    public FuncionarioDTO(Long id, String nomeFun, String eMail,String uuid) {
         this.id = id;
         this.nomeFun = nomeFun;
         this.eMail = eMail;
+        this.uuid = uuid;
     }
 
     public static FuncionarioDTO of(Funcionario funcionario){
         return new FuncionarioDTO(
                 funcionario.getId(),
                 funcionario.getNomeFun(),
-                funcionario.geteMail()
+                funcionario.geteMail(),
+                funcionario.getUuid()
         );
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Long getId() {
@@ -53,6 +64,7 @@ public class FuncionarioDTO {
                 "id=" + id +
                 ", nomeFun='" + nomeFun + '\'' +
                 ", eMail='" + eMail + '\'' +
+                ", uuid='" + uuid + '\'' +
                 '}';
     }
 }
