@@ -1,0 +1,1 @@
+ALTER TABLE seg_pedido ADD data DATE NOT NULL;

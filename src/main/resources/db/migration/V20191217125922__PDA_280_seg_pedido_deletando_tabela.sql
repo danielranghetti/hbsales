@@ -1,0 +1,1 @@
+DROP TABLE seg_pedido;

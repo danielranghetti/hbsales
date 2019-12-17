@@ -1,12 +1,19 @@
 package br.com.hbsis.pedido;
 
 import br.com.hbsis.funcionario.FuncionarioService;
+import br.com.hbsis.periodoVenda.PeriodoVenda;
 import br.com.hbsis.periodoVenda.PeriodoVendaService;
 import br.com.hbsis.produto.ProdutoService;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -29,15 +36,21 @@ public class PedidoService {
         this.periodoVendaService = periodoVendaService;
         this.produtoService = produtoService;
     }
-    public PedidoDTO save(PedidoDTO pedidoDTO){
 
+
+    public PedidoDTO save(PedidoDTO pedidoDTO){
         Pedido pedido = new Pedido();
 
-        pedido.setData(pedidoDTO.getDate());
+        this.validate(pedidoDTO);
+
+        pedido.setCodPedido(pedidoDTO.getCodPedido());
+        pedido.setData(LocalDate.now());
+        pedido.setId(pedidoDTO.getId());
         pedido.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
         pedido.setProduto(produtoService.findByProdutoId(pedidoDTO.getProduto()));
-        pedido.setId(pedidoDTO.getId());
+        pedido.setPeriodoVenda(periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
         pedido.setQtdCompra(pedidoDTO.getQtdCompra());
+        pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
 
         pedido = this.iPedidoRepository.save(pedido);
         return  PedidoDTO.of(pedido);
@@ -51,18 +64,18 @@ public class PedidoService {
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
-    public Pedido findByLinhaCategoriaId(Long id) {
-        Optional<Pedido> pedidoOptional = this.iPedidoRepository.findById(id);
+    public PedidoDTO findByCodigo(String codPedido) {
+        Optional<Pedido> pedidoOptional = this.iPedidoRepository.findByCodPedido(codPedido);
 
-        if (pedidoOptional.isPresent()) {
-            return pedidoOptional.get();
+        if (((Optional) pedidoOptional).isPresent()) {
+            return PedidoDTO.of(pedidoOptional.get());
         }
-
-        throw new IllegalArgumentException(String.format("ID %s não existe", id));
+        throw new IllegalArgumentException(String.format("Codigo pedido %s não existe", codPedido));
     }
 
     public PedidoDTO update(PedidoDTO pedidoDTO, Long id){
         Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
+        this.validate(pedidoDTO);
 
         if (pedidoExistenteOptional.isPresent()){
             Pedido pedidoExistente = pedidoExistenteOptional.get();
@@ -71,11 +84,14 @@ public class PedidoService {
             LOGGER.debug("Payloa: {}", pedidoDTO);
             LOGGER.debug("Pedido existente:{}", pedidoExistente);
 
-            pedidoExistente.setData(pedidoDTO.getDate());
+
+            pedidoExistente.setData(LocalDate.now());
             pedidoExistente.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
             pedidoExistente.setProduto(produtoService.findByProdutoId(pedidoDTO.getProduto()));
-            pedidoExistente.setId(pedidoDTO.getId());
+            pedidoExistente.setPeriodoVenda(periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
             pedidoExistente.setQtdCompra(pedidoDTO.getQtdCompra());
+            pedidoExistente.setStatus(pedidoDTO.getStatus().toUpperCase());
+
 
             pedidoExistente = this.iPedidoRepository.save(pedidoExistente);
             return  PedidoDTO.of(pedidoExistente);
@@ -87,6 +103,60 @@ public class PedidoService {
         LOGGER.info("Executando delete para linha de categoria de ID:[{}]", id);
         this.iPedidoRepository.deleteById(id);
     }
+    private void validate(PedidoDTO pedidoDTO){
+        LOGGER.info("Validando pedido");
 
+
+        pedidoDTO.setCodPedido(gerandoCod());
+        pedidoDTO.setDate(LocalDate.now());
+
+
+        while (iPedidoRepository.existsByCodPedido(pedidoDTO.getCodPedido())){
+            LOGGER.info("codigo de pedido já existente gerando um novo");
+            pedidoDTO.setCodPedido(gerandoCod());
+        }
+
+
+        if (pedidoDTO== null){
+            throw new IllegalArgumentException("Pedido não pode ser nulo");
+        }
+        if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getFuncionario()))){
+            throw new IllegalArgumentException("Funcionário não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getProduto()))){
+            throw new IllegalArgumentException("Produto não deve ser nulo");
+        }
+        if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getPeriodoVenda()))){
+            throw new IllegalArgumentException("Periodo de vendas não deve ser nulo");
+        }
+        if (iPedidoRepository.existsByCodPedido(pedidoDTO.getCodPedido())){
+            throw new IllegalArgumentException("O codigo do pedido já existe");
+        }
+        if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getQtdCompra()))){
+            throw new IllegalArgumentException("A quantidade não deve ser nula");
+        }
+        if (StringUtils.isEmpty(pedidoDTO.getStatus())){
+            throw new IllegalArgumentException("O status não deve ser nula");
+        }
+
+        switch (pedidoDTO.getStatus().toUpperCase()){
+            case "ATIVO" :
+            case "CANCELADO" :
+            case "RETIRADO" :
+                break;
+            default:
+                throw new IllegalArgumentException("Status do produto apenas pode ser: Ativo/Cancelado/Retirado");
+        }
+    }
+    public String gerandoCod(){
+        List codigos = new ArrayList();
+        for (int i = 1; i < 61; i++) { //Sequencia da mega sena
+            codigos.add(i);
+
+        }
+        Collections.shuffle(codigos);
+        String codigoCompleto = StringUtils.leftPad(String.valueOf(codigos.get(0)),10,"0");
+        return codigoCompleto;
+    }
 
 }
