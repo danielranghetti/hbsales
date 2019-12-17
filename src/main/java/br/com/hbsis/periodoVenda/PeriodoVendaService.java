@@ -95,6 +95,16 @@ public class PeriodoVendaService {
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
+    public PeriodoVenda findByPeriodoVendaId(Long id) {
+        Optional<PeriodoVenda> periodoVendaOptional = this.iPeriodoVendaRepository.findById(id);
+
+        if (periodoVendaOptional.isPresent()) {
+            return periodoVendaOptional.get();
+        }
+
+        throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
+
 
     public PeriodoVendaDTO update(PeriodoVendaDTO periodoVendaDTO, Long id) {
         Optional<PeriodoVenda> periodoVendaExistenteOptional = this.iPeriodoVendaRepository.findById(id);

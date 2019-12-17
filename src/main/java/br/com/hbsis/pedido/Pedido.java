@@ -1,6 +1,8 @@
 package br.com.hbsis.pedido;
 
+
 import br.com.hbsis.funcionario.Funcionario;
+import br.com.hbsis.periodoVenda.PeriodoVenda;
 import br.com.hbsis.produto.Produto;
 
 import javax.persistence.*;
@@ -15,6 +17,10 @@ public class Pedido {
     private Long id;
     @Column(name = "qtd_compra", length = 255)
     private int qtdCompra;
+    @Column(name = "codigo_pedido")
+    private String codPedido;
+    @Column(name = "status",length = 10,nullable = false)
+    private String status;
     @Column(name = "data", length = 15)
     private LocalDate data;
 
@@ -24,6 +30,9 @@ public class Pedido {
     @ManyToOne
     @JoinColumn(name = "id_funcionario", referencedColumnName = "id")
     private Funcionario funcionario;
+    @ManyToOne
+    @JoinColumn(name = "id_periodo_venda",referencedColumnName = "id")
+    private PeriodoVenda periodoVenda;
 
     public Long getId() {
         return id;
@@ -33,20 +42,36 @@ public class Pedido {
         this.id = id;
     }
 
-    public LocalDate getData() {
-        return data;
-    }
-
-    public void setData(LocalDate data) {
-        this.data = data;
-    }
-
     public int getQtdCompra() {
         return qtdCompra;
     }
 
     public void setQtdCompra(int qtdCompra) {
         this.qtdCompra = qtdCompra;
+    }
+
+    public String getCodPedido() {
+        return codPedido;
+    }
+
+    public void setCodPedido(String codPedido) {
+        this.codPedido = codPedido;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public void setData(LocalDate data) {
+        this.data = data;
     }
 
     public Produto getProduto() {
@@ -65,17 +90,26 @@ public class Pedido {
         this.funcionario = funcionario;
     }
 
+    public PeriodoVenda getPeriodoVenda() {
+        return periodoVenda;
+    }
+
+    public void setPeriodoVenda(PeriodoVenda periodoVenda) {
+        this.periodoVenda = periodoVenda;
+    }
+
     @Override
     public String toString() {
         return "Pedido{" +
                 "id=" + id +
                 ", qtdCompra=" + qtdCompra +
+                ", codPedido='" + codPedido + '\'' +
+                ", status='" + status + '\'' +
                 ", data=" + data +
                 ", produto=" + produto +
                 ", funcionario=" + funcionario +
+                ", periodoVenda=" + periodoVenda +
                 '}';
     }
-
-
 }
 
