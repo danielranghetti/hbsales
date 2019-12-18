@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("/pedidos")
 public class PedidoRest {
@@ -46,6 +48,10 @@ public class PedidoRest {
         LOGGER.info("Recebendo Delete para Usuário de ID: {}", id);
 
         this.pedidoService.delete(id);
+    }
+    @GetMapping("/exportaPedidos/{id}")
+    public void findAll(@PathVariable("id") Long id,HttpServletResponse response) throws Exception{
+        pedidoService.csvPedidoPeriodoVendasExport(response, id);
     }
 
 
