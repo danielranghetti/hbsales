@@ -2,7 +2,10 @@ package br.com.hbsis.pedido;
 
 import br.com.hbsis.funcionario.FuncionarioService;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
+import br.com.hbsis.periodoVenda.PeriodoVendaDTO;
 import br.com.hbsis.periodoVenda.PeriodoVendaService;
+import br.com.hbsis.produto.Produto;
+import br.com.hbsis.produto.ProdutoDTO;
 import br.com.hbsis.produto.ProdutoService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
@@ -44,7 +47,7 @@ public class PedidoService {
         this.validate(pedidoDTO);
 
         pedido.setCodPedido(pedidoDTO.getCodPedido());
-        pedido.setData(LocalDate.now());
+        pedido.setData(pedidoDTO.getDate());
         pedido.setId(pedidoDTO.getId());
         pedido.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
         pedido.setProduto(produtoService.findByProdutoId(pedidoDTO.getProduto()));
@@ -103,28 +106,34 @@ public class PedidoService {
         LOGGER.info("Executando delete para linha de categoria de ID:[{}]", id);
         this.iPedidoRepository.deleteById(id);
     }
-    private void validate(PedidoDTO pedidoDTO){
+
+      private void validate(PedidoDTO pedidoDTO){
         LOGGER.info("Validando pedido");
 
 
         pedidoDTO.setCodPedido(gerandoCod());
         pedidoDTO.setDate(LocalDate.now());
+        Produto produto;
+        PeriodoVenda periodoVenda;
 
 
         while (iPedidoRepository.existsByCodPedido(pedidoDTO.getCodPedido())){
             LOGGER.info("codigo de pedido já existente gerando um novo");
             pedidoDTO.setCodPedido(gerandoCod());
         }
-
-
         if (pedidoDTO== null){
             throw new IllegalArgumentException("Pedido não pode ser nulo");
         }
         if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getFuncionario()))){
             throw new IllegalArgumentException("Funcionário não deve ser nulo");
         }
-        if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getProduto()))){
+        if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getProduto()))) {
             throw new IllegalArgumentException("Produto não deve ser nulo");
+        }
+        produto = produtoService.findByProdutoId(pedidoDTO.getProduto());
+        periodoVenda = periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda());
+        if (produto.getLinhaCategoria().getCategoria().getFornecedor().getId() != periodoVenda.getFornecedor().getId()){
+                throw new IllegalArgumentException("produto não é do mesmo fornecedor que o periodo de venda");
         }
         if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getPeriodoVenda()))){
             throw new IllegalArgumentException("Periodo de vendas não deve ser nulo");
