@@ -108,6 +108,26 @@ public class PedidoService {
         String mascara = CNPJ.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
         return mascara;
     }
+    public void csvPedidoFuncionario(Long id,HttpServletResponse response) throws Exception{
+        String nomeArquivo = "pedido-funcionario.csv";
+        response.setContentType("text/csv");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + nomeArquivo + "\"");
+        PrintWriter Writer = response.getWriter();
+
+        ICSVWriter icsvWriter = new CSVWriterBuilder(Writer).withSeparator(';').withEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER)
+                .withLineEnd(CSVWriter.DEFAULT_LINE_END).build();
+        String ecreveCsv[] = {"Nome do Funcionário","Nome do Produto","Quantidade","fornecedor" };
+        icsvWriter.writeNext(ecreveCsv);
+
+        Funcionario funcionario;
+        funcionario = funcionarioService.findByFuncionarioId(id);
+        List<Pedido> pedidos;
+
+        pedidos = iPedidoRepository.findByFuncionario(funcionario);
+        for (Pedido pedido : pedidos){
+            icsvWriter.writeNext(new  String[]{pedido.getFuncionario().getNomeFun(),pedido.getProduto().getNome(),pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "--" + mascaraCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
+        }
+    }
 
 
     public PedidoDTO update(PedidoDTO pedidoDTO, Long id){
