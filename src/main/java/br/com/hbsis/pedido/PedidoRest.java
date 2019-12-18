@@ -53,6 +53,8 @@ public class PedidoRest {
     public void findAll(@PathVariable("id") Long id,HttpServletResponse response) throws Exception{
         pedidoService.csvPedidoPeriodoVendasExport(response, id);
     }
-
-
+    @GetMapping("/exportaPedidosFuncionarios/{id}")
+    public void findAllFuncionario(@PathVariable("id") Long id,HttpServletResponse response) throws Exception{
+        pedidoService.csvPedidoFuncionario(id, response);
+    }
 }
