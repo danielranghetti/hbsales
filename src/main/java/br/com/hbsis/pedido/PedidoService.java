@@ -1,18 +1,22 @@
 package br.com.hbsis.pedido;
 
+import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
+import br.com.hbsis.periodoVenda.IPeriodoVendaRepository;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
-import br.com.hbsis.periodoVenda.PeriodoVendaDTO;
 import br.com.hbsis.periodoVenda.PeriodoVendaService;
 import br.com.hbsis.produto.Produto;
-import br.com.hbsis.produto.ProdutoDTO;
 import br.com.hbsis.produto.ProdutoService;
+import com.opencsv.*;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +30,7 @@ public class PedidoService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidoService.class);
 
     private final IPedidoRepository iPedidoRepository;
+
     private final FuncionarioService funcionarioService;
 
     //TODO: 13/12/2019 se não está sendo utilizado, corta fora
@@ -75,6 +80,35 @@ public class PedidoService {
         }
         throw new IllegalArgumentException(String.format("Codigo pedido %s não existe", codPedido));
     }
+
+
+    public void csvPedidoPeriodoVendasExport(HttpServletResponse response,Long id) throws Exception{
+        String nomeArquivo = "pedidos-fornecedor.csv";
+        response.setContentType("text/csv");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + nomeArquivo + "\"");
+        PrintWriter Writer = response.getWriter();
+
+        ICSVWriter icsvWriter = new CSVWriterBuilder(Writer).withSeparator(';').withEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER)
+                .withLineEnd(CSVWriter.DEFAULT_LINE_END).build();
+
+        String escreveCsv[] ={"Nome do Produto","Quantidade","fornecedor"};
+        icsvWriter.writeNext(escreveCsv);
+        PeriodoVenda periodoVendas;
+        periodoVendas = periodoVendaService.findByPeriodoVendaId(id);
+
+        List<Pedido> pedidos;
+
+        pedidos = iPedidoRepository.findByPeriodoVenda(periodoVendas);
+
+        for (Pedido pedido : pedidos){
+            icsvWriter.writeNext(new String[]{pedido.getProduto().getNome(),String.valueOf(pedido.getQtdCompra()),pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "---" + mascaraCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
+        }
+    }
+    public String mascaraCnpj(String CNPJ){
+        String mascara = CNPJ.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
+        return mascara;
+    }
+
 
     public PedidoDTO update(PedidoDTO pedidoDTO, Long id){
         Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
