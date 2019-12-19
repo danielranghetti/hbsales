@@ -229,6 +229,8 @@ public class PedidoService {
                     System.out.println(PedidoDTO.of(pedido));
                     pedidoDTOList.add(PedidoDTO.of(pedido));
 
+
+
                 } else if (!(pedido.getStatus().equals("ATIVO") || pedido.getStatus().equals("RETIRADO"))) {
                     LOGGER.info("Pedido Cancelado");
                 }
