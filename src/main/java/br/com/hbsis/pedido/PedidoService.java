@@ -212,6 +212,9 @@ public class PedidoService {
 
         if (pedidoExistenteOptionalPedido.isPresent()) {
             Pedido pedidoExistente = pedidoExistenteOptionalPedido.get();
+            if (pedidoExistente.getPeriodoVenda().getDataFinal().isAfter(pedidoExistente.getPeriodoVenda().getDataFinal())){
+                throw new IllegalArgumentException("Periodo de vendas do pedido já terminou não podendo ser cancelado");
+            }
             if (pedidoExistente.getStatus().equals("RETIRADO")) {
                 throw new IllegalArgumentException("Já Retirado não podendo ser mas Cancelado");
             }
