@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -53,8 +54,13 @@ public class PedidoRest {
     public void findAll(@PathVariable("id") Long id,HttpServletResponse response) throws Exception{
         pedidoService.csvPedidoPeriodoVendasExport(response, id);
     }
+
     @GetMapping("/exportaPedidosFuncionarios/{id}")
     public void findAllFuncionario(@PathVariable("id") Long id,HttpServletResponse response) throws Exception{
         pedidoService.csvPedidoFuncionario(id, response);
+    }
+    @GetMapping("/pedidoAtivoRetirado/{id}")
+    public List<PedidoDTO> findAll1(@PathVariable Long id) {
+        return this.pedidoService.findAllByFornecedorId(id);
     }
 }

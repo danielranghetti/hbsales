@@ -12,7 +12,10 @@ import java.util.Optional;
 public interface IPedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByPeriodoVenda(PeriodoVenda periodoVenda);
     List<Pedido> findByFuncionario(Funcionario funcionario);
-    Optional<Pedido> findByCodPedido(String codPedido);
+
     boolean existsByCodPedido(String codPedido);
+
+
+
 }
 
