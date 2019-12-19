@@ -123,7 +123,7 @@ public class PedidoService {
 
     public PedidoDTO update(PedidoDTO pedidoDTO, Long id) {
         Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
-        this.validate(pedidoDTO);
+        this.validateUpdate(pedidoDTO,id);
 
         if (pedidoExistenteOptional.isPresent()) {
             Pedido pedidoExistente = pedidoExistenteOptional.get();
@@ -222,6 +222,23 @@ public class PedidoService {
                 throw new IllegalArgumentException("Já cancelado");
             }
         }
+    }
+    private void validateUpdate(PedidoDTO pedidoDTO, Long id){
+        Optional<Pedido> pedidoExistenteOptionalAltera = this.iPedidoRepository.findById(id);
+
+        if (pedidoExistenteOptionalAltera.isPresent()) {
+            Pedido pedidoExistente = pedidoExistenteOptionalAltera.get();
+            if (pedidoExistente.getPeriodoVenda().getDataFinal().isAfter(pedidoExistente.getPeriodoVenda().getDataFinal())){
+                throw new IllegalArgumentException("Periodo de vendas do pedido já terminou não podendo ser alterado");
+            }
+            if (pedidoExistente.getStatus().equals("RETIRADO")) {
+                throw new IllegalArgumentException("Já Retirado não podendo ser mas Alterado");
+            }
+            if (pedidoExistente.getStatus().equals("CANCELADO")) {
+                throw new IllegalArgumentException("Já cancelado não podendo ser mais alterado");
+            }
+        }
+
     }
 
 
