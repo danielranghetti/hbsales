@@ -204,6 +204,24 @@ public class PedidoService {
         }
     }
 
+
+    private void validateCan(PedidoDTO pedidoDTO, Long id) {
+        Optional<Pedido> pedidoExistenteOptionalPedido = this.iPedidoRepository.findById(id);
+        pedidoDTO.setStatus("CANCELADO");
+        pedidoDTO.setDate(LocalDate.now());
+
+        if (pedidoExistenteOptionalPedido.isPresent()) {
+            Pedido pedidoExistente = pedidoExistenteOptionalPedido.get();
+            if (pedidoExistente.getStatus().equals("RETIRADO")) {
+                throw new IllegalArgumentException("Já Retirado não podendo ser mas Cancelado");
+            }
+            if (pedidoExistente.getStatus().equals("CANCELADO")) {
+                throw new IllegalArgumentException("Já cancelado");
+            }
+        }
+    }
+
+
     public String gerandoCod() {
         List codigos = new ArrayList();
         for (int i = 1; i < 61; i++) { //Sequencia da mega sena
@@ -230,7 +248,6 @@ public class PedidoService {
                     pedidoDTOList.add(PedidoDTO.of(pedido));
 
 
-
                 } else if (!(pedido.getStatus().equals("ATIVO") || pedido.getStatus().equals("RETIRADO"))) {
                     LOGGER.info("Pedido Cancelado");
                 }
@@ -243,7 +260,33 @@ public class PedidoService {
 
         return pedidoDTOList;
     }
+
+    public PedidoDTO updateCancelar(PedidoDTO pedidoDTO, Long id) {
+        Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
+        this.validateCan(pedidoDTO, id);
+
+
+        if (pedidoExistenteOptional.isPresent()) {
+            Pedido pedidoExistente = pedidoExistenteOptional.get();
+            LOGGER.info("Atualizando pedido... id:[{}]", pedidoExistente.getId());
+            LOGGER.info("Canelando pedido... id:[{}]", pedidoExistente.getId());
+            LOGGER.debug("Payloa: {}", pedidoDTO);
+            LOGGER.debug("Pedido existente:{}", pedidoExistente);
+
+
+            pedidoExistente.setStatus(pedidoDTO.getStatus());
+            pedidoExistente.setData(pedidoDTO.getDate());
+
+
+            pedidoExistente = this.iPedidoRepository.save(pedidoExistente);
+            return PedidoDTO.of(pedidoExistente);
+
+        }
+        throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
+
 }
+
 
 
 

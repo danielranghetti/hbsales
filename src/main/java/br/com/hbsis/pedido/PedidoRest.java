@@ -37,11 +37,11 @@ public class PedidoRest {
         return this.pedidoService.findByid(id);
     }
     @PutMapping("/{id}")
-    public PedidoDTO udpate(@PathVariable("id") Long id, @RequestBody PedidoDTO usuarioDTO) {
-        LOGGER.info("Recebendo Update para Usuário de ID: {}", id);
-        LOGGER.debug("Payload: {}", usuarioDTO);
+    public PedidoDTO udpate(@PathVariable("id") Long id, @RequestBody PedidoDTO pedidoDTO) {
+        LOGGER.info("Recebendo Update para Pedido de ID: {}", id);
+        LOGGER.debug("Payload: {}", pedidoDTO);
 
-        return this.pedidoService.update(usuarioDTO, id);
+        return this.pedidoService.update(pedidoDTO, id);
     }
 
     @DeleteMapping("/{id}")
@@ -63,4 +63,11 @@ public class PedidoRest {
     public List<PedidoDTO> findAll1(@PathVariable Long id) {
         return this.pedidoService.findAllByFornecedorId(id);
     }
+    @PutMapping("/cancelaPedido/{id}")
+    public PedidoDTO updateCan(@PathVariable("id") Long id, PedidoDTO pedidoDTO){
+        LOGGER.info("Recebendo Update para Pedido de ID: {}", id);
+        LOGGER.debug("Payload: {}", pedidoDTO);
+        return this.pedidoService.updateCancelar(pedidoDTO,id);
+    }
+
 }
