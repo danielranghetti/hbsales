@@ -1,5 +1,6 @@
 package br.com.hbsis.pedido;
 
+import br.com.hbsis.email.Email;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
@@ -10,12 +11,16 @@ import com.opencsv.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,27 +29,28 @@ import java.util.Optional;
 
 @Service
 public class PedidoService {
+    @Autowired
+    private JavaMailSender mailSender;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidoService.class);
 
     private final IPedidoRepository iPedidoRepository;
-
     private final FuncionarioService funcionarioService;
-
     //TODO: 13/12/2019 se não está sendo utilizado, corta fora
     private final PeriodoVendaService periodoVendaService;
     private final ProdutoService produtoService;
-
 
     public PedidoService(IPedidoRepository iPedidoRepository, FuncionarioService funcionarioService, PeriodoVendaService periodoVendaService, ProdutoService produtoService) {
         this.iPedidoRepository = iPedidoRepository;
         this.funcionarioService = funcionarioService;
         this.periodoVendaService = periodoVendaService;
         this.produtoService = produtoService;
+
     }
 
     public PedidoDTO save(PedidoDTO pedidoDTO) {
         Pedido pedido = new Pedido();
+        Email email = new Email();
 
         this.validate(pedidoDTO);
 
@@ -57,9 +63,28 @@ public class PedidoService {
         pedido.setQtdCompra(pedidoDTO.getQtdCompra());
         pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
 
+
+       this.enviarEmailDataRetirada(pedido);
+
+
         pedido = this.iPedidoRepository.save(pedido);
         return PedidoDTO.of(pedido);
 
+    }
+    public String enviarEmailDataRetirada(Pedido pedido) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setSubject("O pedido: " + pedido.getCodPedido() + " foi aprovado ");
+        message.setText(pedido.getFuncionario().getNome() + "\r\n"
+                + "A data de retirado do seu pedido é " + pedido.getPeriodoVenda().getDataRetirada().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        message.setTo(pedido.getFuncionario().geteMail());
+        message.setFrom("enviaemaild@gmail.com");
+        try {
+            mailSender.send(message);
+            return "enviado";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return  "error";
+        }
     }
 
     public PedidoDTO findByid(Long id) {
@@ -116,7 +141,7 @@ public class PedidoService {
 
         pedidos = iPedidoRepository.findByFuncionario(funcionario);
         for (Pedido pedido : pedidos) {
-            icsvWriter.writeNext(new String[]{pedido.getFuncionario().getNomeFun(), pedido.getProduto().getNome(), String.valueOf(pedido.getQtdCompra()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "--" + mascaraCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
+            icsvWriter.writeNext(new String[]{pedido.getFuncionario().getNome(), pedido.getProduto().getNome(), String.valueOf(pedido.getQtdCompra()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "--" + mascaraCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
         }
     }
 
@@ -240,6 +265,23 @@ public class PedidoService {
         }
 
     }
+    private void validateRetira(PedidoDTO pedidoDTO, Long id) {
+
+        Optional<Pedido> pedidoExistenteOptionalRetira = this.iPedidoRepository.findById(id);
+        pedidoDTO.setStatus("RETIRADO");
+        pedidoDTO.setDate(LocalDate.now());
+        if (pedidoExistenteOptionalRetira.isPresent()) {
+            Pedido pedidoExistenteRetira = pedidoExistenteOptionalRetira.get();
+            if (pedidoExistenteRetira.getStatus().equals("CANCELADO")){
+                throw new IllegalArgumentException("Pedido foi cancelado ");
+            }if (pedidoExistenteRetira.getStatus().equals("RETIRADO")){
+                throw new IllegalArgumentException("Pedido já Retirado");
+            }if (pedidoExistenteRetira.getStatus().equals("ATIVO")){
+                LOGGER.info("Fazendo a retirada do Pedido ID... id: {}", id);
+            }
+
+        }
+    }
 
 
     public String gerandoCod() {
@@ -300,6 +342,29 @@ public class PedidoService {
 
             pedidoExistente = this.iPedidoRepository.save(pedidoExistente);
             return PedidoDTO.of(pedidoExistente);
+
+        }
+        throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
+    public PedidoDTO updateRetira(PedidoDTO pedidoDTO, Long id) {
+        Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
+        this.validateRetira(pedidoDTO, id);
+
+
+        if (pedidoExistenteOptional.isPresent()) {
+            Pedido pedidoExistenteRetira = pedidoExistenteOptional.get();
+            LOGGER.info("Atualizando pedido... id:[{}]", pedidoExistenteRetira.getId());
+            LOGGER.info("Retirando pedido... id:[{}]", pedidoExistenteRetira.getId());
+            LOGGER.debug("Payloa: {}", pedidoDTO);
+            LOGGER.debug("Pedido existente:{}", pedidoExistenteRetira);
+
+
+            pedidoExistenteRetira.setStatus(pedidoDTO.getStatus());
+            pedidoExistenteRetira.setData(pedidoDTO.getDate());
+
+
+            pedidoExistenteRetira = this.iPedidoRepository.save(pedidoExistenteRetira);
+            return PedidoDTO.of(pedidoExistenteRetira);
 
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));

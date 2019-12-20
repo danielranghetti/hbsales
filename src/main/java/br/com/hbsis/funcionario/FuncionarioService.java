@@ -2,7 +2,6 @@ package br.com.hbsis.funcionario;
 
 
 import org.apache.commons.lang.StringUtils;
-import org.omg.CORBA.WrongTransactionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,7 @@ public class FuncionarioService {
 
         funcionario.setId(funcionarioDTO.getId());
         funcionario.seteMail(funcionarioDTO.geteMail());
-        funcionario.setNomeFun(funcionarioDTO.getNomeFun());
+        funcionario.setNome(funcionarioDTO.getNome());
         funcionario.setUuid(UUID.randomUUID().toString());
 
         funcionario = this.iFuncionarioRepository.save(funcionario);
@@ -46,7 +45,7 @@ public class FuncionarioService {
         if (funcionarioDTO == null){
             throw new  IllegalArgumentException("FuncionarioDTO não deve ser nulo");
         }
-        if (StringUtils.isEmpty(funcionarioDTO.getNomeFun())){
+        if (StringUtils.isEmpty(funcionarioDTO.getNome())){
             throw new IllegalArgumentException("O nome do funcionário não deve ser nulo");
         }
         if (StringUtils.isEmpty(funcionarioDTO.geteMail())){
@@ -85,7 +84,7 @@ public class FuncionarioService {
             LOGGER.debug("Payload: {}", funcionarioDTO);
             LOGGER.debug("Funcionário existente: {}", funcionarioExistente);
 
-            funcionarioExistente.setNomeFun(funcionarioDTO.getNomeFun());
+            funcionarioExistente.setNome(funcionarioDTO.getNome());
             funcionarioExistente.seteMail(funcionarioDTO.geteMail());
 
             funcionarioExistente = this.iFuncionarioRepository.save(funcionarioExistente);

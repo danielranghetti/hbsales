@@ -63,11 +63,18 @@ public class PedidoRest {
     public List<PedidoDTO> findAll1(@PathVariable Long id) {
         return this.pedidoService.findAllByFornecedorId(id);
     }
+
     @PutMapping("/cancelaPedido/{id}")
     public PedidoDTO updateCan(@PathVariable("id") Long id, PedidoDTO pedidoDTO){
         LOGGER.info("Recebendo Update para Pedido de ID: {}", id);
         LOGGER.debug("Payload: {}", pedidoDTO);
         return this.pedidoService.updateCancelar(pedidoDTO,id);
+    }
+    @PutMapping("/retirarPedido/{id}")
+    public PedidoDTO updateRet(@PathVariable("id") Long id, PedidoDTO pedidoDTO){
+        LOGGER.info("Recebendo Update para Pedido de ID: {}", id);
+        LOGGER.debug("Payload: {}", pedidoDTO);
+        return this.pedidoService.updateRetira(pedidoDTO,id);
     }
 
 }
