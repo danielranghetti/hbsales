@@ -4,16 +4,12 @@ import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.CategoriaDTO;
 import br.com.hbsis.categoria.CategoriaService;
 import br.com.hbsis.categoria.ICategoriaRepository;
-import com.sun.xml.bind.v2.TODO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import sun.security.x509.X500Name;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -123,26 +119,19 @@ public class FornecedorService {
         throw new IllegalArgumentException(String.format("cnpj %s não existe", cnpj));
     }
 
-    // TODO: 12/12/2019 Remover código que não está sendo usado
-
-
     public FornecedorDTO update(FornecedorDTO fornecedorDTO, Long id) {
         Optional<Fornecedor> fornecedorExistenteOptional = this.iFornecedorRepository.findById(id);
-        // TODO: 12/12/2019 recalcular o código das categorias deste fornecedor quando o fornecedor for atualizado
         this.validate(fornecedorDTO);
 
         if (fornecedorExistenteOptional.isPresent()) {
             Fornecedor fornecedorExistente = fornecedorExistenteOptional.get();
-            Fornecedor fornecedor = new Fornecedor();
-            List<Categoria> categorias = new ArrayList<>();
+            Fornecedor fornecedor;
             fornecedor = findByFornecedorId(id);
-
-            categorias = iCategoriaRepository.findByFornecedor(fornecedor);
+            List<Categoria> categorias= iCategoriaRepository.findByFornecedor(fornecedor);
 
             LOGGER.info("Atualizando fornecedor... id: [{}]", fornecedorExistente.getId());
             LOGGER.debug("Payload: {}", fornecedorDTO);
             LOGGER.debug("Fornecedor Existente: {}", fornecedorExistente);
-
 
             fornecedorExistente.setRazaoSocial(fornecedorDTO.getRazaoSocial());
             fornecedorExistente.setCnpj(fornecedorDTO.getCnpj());
@@ -168,7 +157,7 @@ public class FornecedorService {
 
         this.iFornecedorRepository.deleteById(id);
     }
-    // TODO: 12/12/2019 remover código que não está sendo usado
+
 
 
 
