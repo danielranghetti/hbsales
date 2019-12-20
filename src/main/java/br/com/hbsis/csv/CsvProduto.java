@@ -3,6 +3,7 @@ package br.com.hbsis.csv;
 import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.CategoriaService;
 import br.com.hbsis.categoria.ICategoriaRepository;
+import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.fornecedor.FornecedorService;
 import br.com.hbsis.fornecedor.IFornecedorRepository;
 import br.com.hbsis.linhaCategoria.ILinhaCategoriaRepository;

@@ -1,5 +1,6 @@
 package br.com.hbsis.csv;
 
+import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
 import br.com.hbsis.pedido.IPedidoRepository;
