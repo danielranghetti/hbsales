@@ -9,7 +9,7 @@ public class Funcionario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "nome", nullable = false, length = 50)
-    private String nomeFun;
+    private String nome;
     @Column(name = "e_mail", nullable = false, length = 50)
     private String eMail;
     @Column(name = "uuid", unique = true, updatable = false, length = 36)
@@ -23,12 +23,12 @@ public class Funcionario {
         this.id = id;
     }
 
-    public String getNomeFun() {
-        return nomeFun;
+    public String getNome() {
+        return nome;
     }
 
-    public void setNomeFun(String nomeFun) {
-        this.nomeFun = nomeFun;
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public String geteMail() {
@@ -51,7 +51,7 @@ public class Funcionario {
     public String toString() {
         return "Funcionario{" +
                 "id=" + id +
-                ", nomeFun='" + nomeFun + '\'' +
+                ", nomeFun='" + nome + '\'' +
                 ", eMail='" + eMail + '\'' +
                 ", uuid='" + uuid + '\'' +
                 '}';
