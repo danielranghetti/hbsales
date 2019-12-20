@@ -4,8 +4,12 @@ package br.com.hbsis.funcionario;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,6 +55,7 @@ public class FuncionarioService {
         if (StringUtils.isEmpty(funcionarioDTO.geteMail())){
             throw new  IllegalArgumentException("O e-mail não deve ser nulo");
         }
+        hbEmployeeValidarFuncionario(funcionarioDTO);
         if (StringUtils.isEmpty(funcionarioDTO.getUuid())){
             throw new IllegalArgumentException("UUID do funcionário não deve ser nulo");
         }
@@ -96,9 +101,16 @@ public class FuncionarioService {
         LOGGER.info("Executenado o delete para funcionário de ID: [{}]", id);
         this.iFuncionarioRepository.deleteById(id);
     }
-
-
-
+    private void hbEmployeeValidarFuncionario(FuncionarioDTO funcionarioDTO){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Authorization","f5a00604-1b67-11ea-978f-2e728ce88125");
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        HttpEntity httpEntity = new HttpEntity(funcionarioDTO,httpHeaders);
+        ResponseEntity<EmployeeSalvaDTO> responseEntity = restTemplate.exchange("http://10.2.54.25:9999/api/employees", HttpMethod.POST, httpEntity, EmployeeSalvaDTO.class);
+        funcionarioDTO.setUuid(Objects.requireNonNull(responseEntity.getBody().getEmployeeUuid()));
+        funcionarioDTO.setNome(responseEntity.getBody().getEmployeeName());
+    }
 }
 
 
