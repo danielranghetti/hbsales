@@ -3,17 +3,15 @@ package br.com.hbsis.categoria;
 import br.com.hbsis.fornecedor.Fornecedor;
 import br.com.hbsis.fornecedor.FornecedorService;
 import br.com.hbsis.fornecedor.IFornecedorRepository;
-import com.opencsv.*;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,100 +29,6 @@ public class CategoriaService {
         this.iCategoriaRepository = iCategoriaRepository;
         this.fornecedorService = fornecedorService;
         this.iFornecedorRepository = iFornecedorRepository;
-    }
-
-
-
-    //faz a exportaçao
-    public void csvTocategoriaExport(HttpServletResponse response) throws Exception {
-
-        String nomeArquivo = "categorias.csv";
-        response.setContentType("text/csv");
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + nomeArquivo + "\"");
-        PrintWriter Writer = response.getWriter();
-
-        ICSVWriter csvWriter = new CSVWriterBuilder(Writer)
-                .withSeparator(';')
-                .withEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER)
-                .withLineEnd(CSVWriter.DEFAULT_LINE_END)
-                .build();
-
-        String headerCSV[] = {"codigo_categoria", "nome_categoria", "razao_social_fornecedor", "cnpj_fornecedor "};
-        csvWriter.writeNext(headerCSV);
-
-        for (Categoria linha : iCategoriaRepository.findAll()) {
-            csvWriter.writeNext(new String[]{linha.getCodigoCategoria(),linha.getNomeCategoria(),linha.getFornecedor().getRazaoSocial(),mascaraCnpj(linha.getFornecedor().getCnpj())}
-            );
-        }
-
-    }
-
-    public String mascaraCnpj(String CNPJ){
-    String mascara = CNPJ.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
-    return mascara;
-    }
-
-    //faz a importação
-    public List<Categoria> csvToCategoria(MultipartFile file) throws Exception {
-        InputStreamReader inputStreamReader = new InputStreamReader(file.getInputStream());
-
-        CSVReader csvReader = new CSVReaderBuilder(inputStreamReader)
-                .withSkipLines(1).build();
-
-
-        List<Categoria> leitura = new ArrayList<>();
-        List<String[]> linhas = csvReader.readAll();
-
-        for (String[] lista : linhas) {
-            try {
-
-                String[] resultado = lista[0].replaceAll("\"", "").split(";");
-
-                Categoria categoria = new Categoria();
-                Fornecedor fornecedor = new Fornecedor();
-                // TODO: 12/12/2019 remover código que não está sendo usado
-                String codigoCategoria = resultado[0];
-                String cnpj = resultado[3].replaceAll("[^0-9]", "");
-                String nomeCategoria = resultado[1];
-
-                if (iCategoriaRepository.existsByCodigoCategoria(codigoCategoria)){
-                    LOGGER.info("Categoria: {}", codigoCategoria + " já existe");
-                }
-                else {
-                    if (iFornecedorRepository.existsByCnpj(cnpj)) {
-
-                        categoria.setCodigoCategoria(codigoCategoria);
-                        categoria.setNomeCategoria(nomeCategoria);
-                        fornecedor = fornecedorService.findByFornecedorCnpj(cnpj);
-
-                        categoria.setFornecedor(fornecedor);
-                        leitura.add(categoria);
-                    }
-                    else if (!iCategoriaRepository.existsByCodigoCategoria(codigoCategoria)){
-
-                        categoria.setCodigoCategoria(codigoCategoria);
-                        categoria.setNomeCategoria(nomeCategoria);
-                        fornecedor = fornecedorService.findByFornecedorCnpj(cnpj);
-                        LOGGER.info("Categoria: {}", codigoCategoria + " salvando");
-
-                        categoria.setFornecedor(fornecedor);
-                        leitura.add(categoria);
-                    }
-                }
-
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return iCategoriaRepository.saveAll(leitura);
-    }
-
-    public void importFromCsv(MultipartFile file) throws Exception {
-        List<Categoria> categorias = this.csvToCategoria(file);
-        this.saveAll(categorias);
     }
 
     public List<Categoria> saveAll(List<Categoria> categoria) throws Exception {
@@ -156,7 +60,7 @@ public class CategoriaService {
         return CategoriaDTO.of(categoria);
     }
 
-    public String codigoValidar (String codigo){
+    public String codigoValidar(String codigo) {
         String codigoProcessador = StringUtils.leftPad(codigo, 3, "0");
         return codigoProcessador;
     }
@@ -176,12 +80,7 @@ public class CategoriaService {
         if (StringUtils.isEmpty(categoriaDTO.getCodigoCategoria())) {
             throw new IllegalArgumentException("Codigo categoria não deve ser nulo");
         }
-//        }
-//        org.thymeleaf.util.StringUtils.randomAlphanumeric(Integer.parseInt(categoriaDTO.getCodigoCategoria()));
-//
-//
-
-        }
+    }
 
     public CategoriaDTO findById(Long id) {
         Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findById(id);
@@ -199,7 +98,7 @@ public class CategoriaService {
         if (optionalCategoria.isPresent()) {
             return optionalCategoria.get();
         }
-        throw  new IllegalArgumentException(String.format("Codigo categoria %s não existe", codigoCategoria));
+        throw new IllegalArgumentException(String.format("Codigo categoria %s não existe", codigoCategoria));
     }
 
     public Categoria findByCategoriaId(Long id) {
@@ -248,4 +147,4 @@ public class CategoriaService {
     }
 
 
-   }
+}
