@@ -50,7 +50,7 @@ public class PedidoService {
 
     public PedidoDTO save(PedidoDTO pedidoDTO) {
         Pedido pedido = new Pedido();
-        Email email = new Email();
+        //Email email = new Email();
 
         this.validate(pedidoDTO);
 
@@ -63,7 +63,7 @@ public class PedidoService {
         pedido.setQtdCompra(pedidoDTO.getQtdCompra());
         pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
 
-
+        //email.enviarEmailDataRetirada(pedido);
        this.enviarEmailDataRetirada(pedido);
 
 

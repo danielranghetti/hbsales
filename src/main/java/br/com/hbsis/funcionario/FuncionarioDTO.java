@@ -62,7 +62,7 @@ public class FuncionarioDTO {
     public String toString() {
         return "FuncionarioDTO{" +
                 "id=" + id +
-                ", nomeFun='" + nome + '\'' +
+                ", nome='" + nome + '\'' +
                 ", eMail='" + eMail + '\'' +
                 ", uuid='" + uuid + '\'' +
                 '}';
