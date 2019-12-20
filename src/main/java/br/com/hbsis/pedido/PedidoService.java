@@ -1,24 +1,19 @@
 package br.com.hbsis.pedido;
 
-import br.com.hbsis.email.Email;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
 import br.com.hbsis.periodoVenda.PeriodoVendaService;
 import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
-import com.opencsv.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -50,7 +45,7 @@ public class PedidoService {
 
     public PedidoDTO save(PedidoDTO pedidoDTO) {
         Pedido pedido = new Pedido();
-        //Email email = new Email();
+
 
         this.validate(pedidoDTO);
 
@@ -63,14 +58,15 @@ public class PedidoService {
         pedido.setQtdCompra(pedidoDTO.getQtdCompra());
         pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
 
-        //email.enviarEmailDataRetirada(pedido);
-       this.enviarEmailDataRetirada(pedido);
+
+      this.enviarEmailDataRetirada(pedido);
 
 
         pedido = this.iPedidoRepository.save(pedido);
         return PedidoDTO.of(pedido);
 
     }
+
     public String enviarEmailDataRetirada(Pedido pedido) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setSubject("O pedido: " + pedido.getCodPedido() + " foi aprovado ");
@@ -95,56 +91,6 @@ public class PedidoService {
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
-
-    public void csvPedidoPeriodoVendasExport(HttpServletResponse response, Long id) throws Exception {
-        String nomeArquivo = "pedidos-fornecedor.csv";
-        response.setContentType("text/csv");
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"");
-        PrintWriter Writer = response.getWriter();
-
-        ICSVWriter icsvWriter = new CSVWriterBuilder(Writer).withSeparator(';').withEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER)
-                .withLineEnd(CSVWriter.DEFAULT_LINE_END).build();
-
-        String escreveCsv[] = {"Nome do Produto", "Quantidade", "fornecedor"};
-        icsvWriter.writeNext(escreveCsv);
-        PeriodoVenda periodoVendas;
-        periodoVendas = periodoVendaService.findByPeriodoVendaId(id);
-
-        List<Pedido> pedidos;
-
-        pedidos = iPedidoRepository.findByPeriodoVenda(periodoVendas);
-
-        for (Pedido pedido : pedidos) {
-            icsvWriter.writeNext(new String[]{pedido.getProduto().getNome(), String.valueOf(pedido.getQtdCompra()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "---" + mascaraCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
-        }
-    }
-
-    public String mascaraCnpj(String CNPJ) {
-        String mascara = CNPJ.replaceAll("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})", "$1.$2.$3/$4-$5");
-        return mascara;
-    }
-
-    public void csvPedidoFuncionario(Long id, HttpServletResponse response) throws Exception {
-        String nomeArquivo = "pedido-funcionario.csv";
-        response.setContentType("text/csv");
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"");
-        PrintWriter Writer = response.getWriter();
-
-        ICSVWriter icsvWriter = new CSVWriterBuilder(Writer).withSeparator(';').withEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER)
-                .withLineEnd(CSVWriter.DEFAULT_LINE_END).build();
-        String ecreveCsv[] = {"Nome do Funcionário", "Nome do Produto", "Quantidade", "fornecedor"};
-        icsvWriter.writeNext(ecreveCsv);
-
-        Funcionario funcionario;
-        funcionario = funcionarioService.findByFuncionarioId(id);
-        List<Pedido> pedidos;
-
-        pedidos = iPedidoRepository.findByFuncionario(funcionario);
-        for (Pedido pedido : pedidos) {
-            icsvWriter.writeNext(new String[]{pedido.getFuncionario().getNome(), pedido.getProduto().getNome(), String.valueOf(pedido.getQtdCompra()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "--" + mascaraCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
-        }
-    }
-
 
     public PedidoDTO update(PedidoDTO pedidoDTO, Long id) {
         Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
@@ -229,7 +175,6 @@ public class PedidoService {
         }
     }
 
-
     private void validateCan(PedidoDTO pedidoDTO, Long id) {
         Optional<Pedido> pedidoExistenteOptionalPedido = this.iPedidoRepository.findById(id);
         pedidoDTO.setStatus("CANCELADO");
@@ -248,6 +193,7 @@ public class PedidoService {
             }
         }
     }
+
     private void validateUpdate(PedidoDTO pedidoDTO, Long id){
         Optional<Pedido> pedidoExistenteOptionalAltera = this.iPedidoRepository.findById(id);
 
@@ -265,6 +211,7 @@ public class PedidoService {
         }
 
     }
+
     private void validateRetira(PedidoDTO pedidoDTO, Long id) {
 
         Optional<Pedido> pedidoExistenteOptionalRetira = this.iPedidoRepository.findById(id);
@@ -282,7 +229,6 @@ public class PedidoService {
 
         }
     }
-
 
     public String gerandoCod() {
         List codigos = new ArrayList();
@@ -346,6 +292,7 @@ public class PedidoService {
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
+
     public PedidoDTO updateRetira(PedidoDTO pedidoDTO, Long id) {
         Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
         this.validateRetira(pedidoDTO, id);

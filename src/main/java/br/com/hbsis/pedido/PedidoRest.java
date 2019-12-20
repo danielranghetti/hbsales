@@ -2,6 +2,7 @@ package br.com.hbsis.pedido;
 
 
 
+import br.com.hbsis.csv.CsvPedido;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +17,13 @@ public class PedidoRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidoRest.class);
     private final PedidoService pedidoService;
+    private final CsvPedido csvPedido;
 
     @Autowired
 
-    public PedidoRest(PedidoService pedidoService) {
+    public PedidoRest(PedidoService pedidoService, CsvPedido csvPedido) {
         this.pedidoService = pedidoService;
+        this.csvPedido = csvPedido;
     }
     @PostMapping
     public  PedidoDTO save(@RequestBody PedidoDTO pedidoDTO){
@@ -50,14 +53,14 @@ public class PedidoRest {
 
         this.pedidoService.delete(id);
     }
-    @GetMapping("/exportaPedidos/{id}")
+    @GetMapping("/exportaPedidosPeriodVenda/{id}")
     public void findAll(@PathVariable("id") Long id,HttpServletResponse response) throws Exception{
-        pedidoService.csvPedidoPeriodoVendasExport(response, id);
+        csvPedido.csvPedidoPeriodoVendasExport(response, id);
     }
 
     @GetMapping("/exportaPedidosFuncionarios/{id}")
     public void findAllFuncionario(@PathVariable("id") Long id,HttpServletResponse response) throws Exception{
-        pedidoService.csvPedidoFuncionario(id, response);
+        csvPedido.csvPedidoFuncionarioExport(id, response);
     }
     @GetMapping("/pedidoAtivoRetirado/{id}")
     public List<PedidoDTO> findAll1(@PathVariable Long id) {

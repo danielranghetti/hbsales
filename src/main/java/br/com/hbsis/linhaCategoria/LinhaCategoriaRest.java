@@ -1,6 +1,7 @@
 package br.com.hbsis.linhaCategoria;
 
 
+import br.com.hbsis.csv.CsvLinhaCategoria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,12 @@ public class LinhaCategoriaRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LinhaCategoriaRest.class);
     private final LinhaCategoriaService linhaCategoriaService;
+    private final CsvLinhaCategoria csvLinhaCategoria;
 
     @Autowired
-    public LinhaCategoriaRest(LinhaCategoriaService linhaCategoriaService) {
+    public LinhaCategoriaRest(LinhaCategoriaService linhaCategoriaService, CsvLinhaCategoria csvLinhaCategoria) {
         this.linhaCategoriaService = linhaCategoriaService;
+        this.csvLinhaCategoria = csvLinhaCategoria;
     }
 
     @PostMapping
@@ -52,13 +55,13 @@ public class LinhaCategoriaRest {
     }
 
     @GetMapping("/exporta-csv-linhaCategorias")
-    public void findAll(HttpServletResponse response) throws Exception {
-        linhaCategoriaService.csvToLinhaCategoriaExport(response);
+    public void exportCsv(HttpServletResponse response) throws Exception {
+        csvLinhaCategoria.csvToLinhaCategoriaExport(response);
     }
 
     @PostMapping("/importa-csv-linhaCategorias")
     public void importCSV(@RequestParam("file") MultipartFile file) throws Exception {
-        linhaCategoriaService.importFromCsvlinhaCategoria(file);
+        csvLinhaCategoria.importFromCsvlinhaCategoria(file);
     }
 
 
