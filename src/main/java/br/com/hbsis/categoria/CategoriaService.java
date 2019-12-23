@@ -1,18 +1,11 @@
 package br.com.hbsis.categoria;
 
-import br.com.hbsis.fornecedor.Fornecedor;
 import br.com.hbsis.fornecedor.FornecedorService;
-import br.com.hbsis.fornecedor.IFornecedorRepository;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,12 +16,12 @@ public class CategoriaService {
 
     private final ICategoriaRepository iCategoriaRepository;
     private final FornecedorService fornecedorService;
-    private final IFornecedorRepository iFornecedorRepository;
 
-    public CategoriaService(ICategoriaRepository iCategoriaRepository, FornecedorService fornecedorService, IFornecedorRepository iFornecedorRepository) {
+
+    public CategoriaService(ICategoriaRepository iCategoriaRepository, FornecedorService fornecedorService) {
         this.iCategoriaRepository = iCategoriaRepository;
         this.fornecedorService = fornecedorService;
-        this.iFornecedorRepository = iFornecedorRepository;
+
     }
 
     public List<Categoria> saveAll(List<Categoria> categoria) throws Exception {
@@ -60,7 +53,7 @@ public class CategoriaService {
         return CategoriaDTO.of(categoria);
     }
 
-    public String codigoValidar(String codigo) {
+    private String codigoValidar(String codigo) {
         String codigoProcessador = StringUtils.leftPad(codigo, 3, "0");
         return codigoProcessador;
     }
@@ -104,7 +97,7 @@ public class CategoriaService {
     public Categoria findByCategoriaId(Long id) {
         Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findById(id);
 
-        if (((Optional) categoriaOptional).isPresent()) {
+        if ((categoriaOptional).isPresent()) {
             return categoriaOptional.get();
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));

@@ -3,17 +3,22 @@ package br.com.hbsis.pedido;
 import br.com.hbsis.ferramentas.Email;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
-import br.com.hbsis.periodoVenda.PeriodoVenda;
+import br.com.hbsis.itens.Item;
+import br.com.hbsis.itens.ItemDTO;
+import br.com.hbsis.itens.ItemService;
 import br.com.hbsis.periodoVenda.PeriodoVendaService;
-import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
+
 import java.util.ArrayList;
 import java.util.Collections;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -26,19 +31,24 @@ public class PedidoService {
     private final IPedidoRepository iPedidoRepository;
     private final FuncionarioService funcionarioService;
     private final PeriodoVendaService periodoVendaService;
+    private final ItemService itemService;
     private final ProdutoService produtoService;
+
+
     private final Email email;
 
-    public PedidoService(IPedidoRepository iPedidoRepository, FuncionarioService funcionarioService, PeriodoVendaService periodoVendaService, ProdutoService produtoService, Email email) {
+    public PedidoService(IPedidoRepository iPedidoRepository, FuncionarioService funcionarioService, PeriodoVendaService periodoVendaService, @Lazy ItemService itemService, ProdutoService produtoService, Email email) {
         this.iPedidoRepository = iPedidoRepository;
         this.funcionarioService = funcionarioService;
         this.periodoVendaService = periodoVendaService;
+        this.itemService = itemService;
         this.produtoService = produtoService;
         this.email = email;
     }
 
     public PedidoDTO save(PedidoDTO pedidoDTO) {
         Pedido pedido = new Pedido();
+        List<Item> itemList = new ArrayList<>();
 
         this.validate(pedidoDTO);
 
@@ -46,13 +56,24 @@ public class PedidoService {
         pedido.setData(pedidoDTO.getDate());
         pedido.setId(pedidoDTO.getId());
         pedido.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
-        pedido.setProduto(produtoService.findByProdutoId(pedidoDTO.getProduto()));
         pedido.setPeriodoVenda(periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
-        pedido.setQtdCompra(pedidoDTO.getQtdCompra());
         pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
-        email.enviarEmailDataRetirada(pedido);
 
         pedido = this.iPedidoRepository.save(pedido);
+        for (ItemDTO itemDTO : pedidoDTO.getItemDTOList()){
+            Item item = new Item();
+            LOGGER.info("Salvando itens");
+            itemDTO.setPedido(pedido.getId());
+            itemService.save(itemDTO);
+            item.setQuantidade(itemDTO.getQuantidade());
+            item.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
+            itemList.add(item);
+
+        }
+
+        LOGGER.info("Enviando e-mail");
+        email.enviarEmailDataRetirada(pedido);
+        LOGGER.info("E-mail enviado com sucesso");
         return PedidoDTO.of(pedido);
     }
 
@@ -62,6 +83,15 @@ public class PedidoService {
         if (((Optional) pedidoOptional).isPresent()) {
             return PedidoDTO.of(pedidoOptional.get());
         }
+        throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
+    public Pedido findByPedidoId(Long id) {
+        Optional<Pedido> pedidoOptional = this.iPedidoRepository.findById(id);
+
+        if (pedidoOptional.isPresent()) {
+            return pedidoOptional.get();
+        }
+
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
@@ -78,9 +108,8 @@ public class PedidoService {
 
             pedidoExistente.setData(LocalDate.now());
             pedidoExistente.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
-            pedidoExistente.setProduto(produtoService.findByProdutoId(pedidoDTO.getProduto()));
             pedidoExistente.setPeriodoVenda(periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
-            pedidoExistente.setQtdCompra(pedidoDTO.getQtdCompra());
+
             pedidoExistente.setStatus(pedidoDTO.getStatus().toUpperCase());
 
             pedidoExistente = this.iPedidoRepository.save(pedidoExistente);
@@ -99,8 +128,7 @@ public class PedidoService {
 
         pedidoDTO.setCodPedido(gerandoCod());
         pedidoDTO.setDate(LocalDate.now());
-        Produto produto;
-        PeriodoVenda periodoVenda;
+        pedidoDTO.setStatus("ATIVO");
         while (iPedidoRepository.existsByCodPedido(pedidoDTO.getCodPedido())) {
             LOGGER.info("codigo de pedido já existente gerando um novo");
             pedidoDTO.setCodPedido(gerandoCod());
@@ -111,22 +139,11 @@ public class PedidoService {
         if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getFuncionario()))) {
             throw new IllegalArgumentException("Funcionário não deve ser nulo");
         }
-        if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getProduto()))) {
-            throw new IllegalArgumentException("Produto não deve ser nulo");
-        }
-        produto = produtoService.findByProdutoId(pedidoDTO.getProduto());
-        periodoVenda = periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda());
-        if (produto.getLinhaCategoria().getCategoria().getFornecedor().getId() != periodoVenda.getFornecedor().getId()) {
-            throw new IllegalArgumentException("produto não é do mesmo fornecedor que o periodo de venda");
-        }
         if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getPeriodoVenda()))) {
             throw new IllegalArgumentException("Periodo de vendas não deve ser nulo");
         }
         if (iPedidoRepository.existsByCodPedido(pedidoDTO.getCodPedido())) {
             throw new IllegalArgumentException("O codigo do pedido já existe");
-        }
-        if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getQtdCompra()))) {
-            throw new IllegalArgumentException("A quantidade não deve ser nula");
         }
         if (StringUtils.isEmpty(pedidoDTO.getStatus())) {
             throw new IllegalArgumentException("O status não deve ser nula");
