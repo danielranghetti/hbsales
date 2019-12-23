@@ -3,6 +3,8 @@ package br.com.hbsis.csv;
 import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
+import br.com.hbsis.itens.IItemRepository;
+import br.com.hbsis.itens.Item;
 import br.com.hbsis.pedido.IPedidoRepository;
 import br.com.hbsis.pedido.Pedido;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
@@ -24,13 +26,15 @@ public class CsvPedido {
     private final PeriodoVendaService periodoVendaService;
     private final FuncionarioService funcionarioService;
     private final MascaraCnpj mascaraCnpj;
+    private final IItemRepository iItemRepository;
 
     @Autowired
-    public CsvPedido(IPedidoRepository iPedidoRepository, PeriodoVendaService periodoVendaService, FuncionarioService funcionarioService, MascaraCnpj mascaraCnpj) {
+    public CsvPedido(IPedidoRepository iPedidoRepository, PeriodoVendaService periodoVendaService, FuncionarioService funcionarioService, MascaraCnpj mascaraCnpj, IItemRepository iItemRepository) {
         this.iPedidoRepository = iPedidoRepository;
         this.periodoVendaService = periodoVendaService;
         this.funcionarioService = funcionarioService;
         this.mascaraCnpj = mascaraCnpj;
+        this.iItemRepository = iItemRepository;
     }
 
     public void csvPedidoPeriodoVendasExport(HttpServletResponse response, Long id) throws Exception {
@@ -46,15 +50,18 @@ public class CsvPedido {
         icsvWriter.writeNext(escreveCsv);
         PeriodoVenda periodoVendas;
         periodoVendas = periodoVendaService.findByPeriodoVendaId(id);
-
+        List<Item> itemList;
         List<Pedido> pedidos;
 
         pedidos = iPedidoRepository.findByPeriodoVenda(periodoVendas);
 
         for (Pedido pedido : pedidos) {
-            icsvWriter.writeNext(new String[]{pedido.getProduto().getNome(), String.valueOf(pedido.getQtdCompra()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "---" + mascaraCnpj.formatCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
+            itemList = iItemRepository.findByPedido(pedido);
+            for (Item item: itemList)
+            icsvWriter.writeNext(new String[]{item.getProduto().getNome(), String.valueOf(item.getQuantidade()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "---" + mascaraCnpj.formatCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
         }
     }
+
     public void csvPedidoFuncionarioExport(Long id, HttpServletResponse response) throws Exception {
         String nomeArquivo = "pedido-funcionario.csv";
         response.setContentType("text/csv");
@@ -68,11 +75,15 @@ public class CsvPedido {
 
         Funcionario funcionario;
         funcionario = funcionarioService.findByFuncionarioId(id);
+        List<Item> items;
         List<Pedido> pedidos;
 
         pedidos = iPedidoRepository.findByFuncionario(funcionario);
         for (Pedido pedido : pedidos) {
-            icsvWriter.writeNext(new String[]{pedido.getFuncionario().getNome(), pedido.getProduto().getNome(), String.valueOf(pedido.getQtdCompra()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "--" + mascaraCnpj.formatCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
+            items = iItemRepository.findByPedido(pedido);
+            for (Item item : items) {
+                icsvWriter.writeNext(new String[]{pedido.getFuncionario().getNome(), item.getProduto().getNome(), String.valueOf(item.getQuantidade()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "--" + mascaraCnpj.formatCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
+            }
         }
     }
 

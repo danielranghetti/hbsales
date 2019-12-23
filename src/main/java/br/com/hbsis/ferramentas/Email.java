@@ -18,9 +18,13 @@ public class Email {
     }
     public void enviarEmailDataRetirada(Pedido pedido) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject("O pedido: " + pedido.getCodPedido() + " foi aprovado ");
-        message.setText(pedido.getFuncionario().getNome() + "\r\n"
-                + "A data de retirado do seu pedido é " + pedido.getPeriodoVenda().getDataRetirada().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        message.setSubject("O pedido: " + pedido.getCodPedido() +" foi aprovado ");
+        message.setText(pedido.getFuncionario().getNome()  + "\r\n"
+                + "O seu pediodo: " + pedido.getCodPedido() + "\r\n" +
+                "Do fornecedor: "+ pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "foi aprovado" + "\r\n" +
+                "A data de retirado do seu pedido é " + pedido.getPeriodoVenda().getDataRetirada().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "\r\n" +
+                "O local para a retirada é " + pedido.getPeriodoVenda().getFornecedor().getEndereco() + "\r\n" +"para mais informações entra em contato pelo Telefone: " +
+                pedido.getPeriodoVenda().getFornecedor().getTelefone() + " ou pelo E-mail: " + pedido.getPeriodoVenda().getFornecedor().geteMail());
         message.setTo(pedido.getFuncionario().geteMail());
         message.setFrom("enviaemaild@gmail.com");
         try {
