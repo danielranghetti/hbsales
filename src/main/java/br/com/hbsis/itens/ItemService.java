@@ -1,5 +1,7 @@
 package br.com.hbsis.itens;
 
+import br.com.hbsis.pedido.Pedido;
+import br.com.hbsis.pedido.PedidoDTO;
 import br.com.hbsis.pedido.PedidoService;
 import br.com.hbsis.produto.ProdutoService;
 import org.apache.commons.lang.StringUtils;
@@ -17,26 +19,28 @@ public class ItemService {
     private final ProdutoService produtoService;
     private final PedidoService pedidoService;
 
+
     @Autowired
     public ItemService(IItemRepository iItemRepository, ProdutoService produtoService, PedidoService pedidoService) {
         this.iItemRepository = iItemRepository;
         this.produtoService = produtoService;
         this.pedidoService = pedidoService;
     }
-    private void validate(ItemDTO itemDTO){
+    private void validate(ItemDTO itemDTO) {
         LOGGER.info("Validando Item");
         if (itemDTO == null) {
             throw new IllegalArgumentException("ItemDTO não deve ser nulo");
         }
-        if (StringUtils.isEmpty(itemDTO.getPedido().toString())){
+        if (StringUtils.isEmpty(itemDTO.getPedido().toString())) {
             throw new IllegalArgumentException("Pedido do item não deve ser nulo");
         }
-        if (StringUtils.isEmpty(itemDTO.getProduto().toString())){
+        if (StringUtils.isEmpty(itemDTO.getProduto().toString())) {
             throw new IllegalArgumentException("Produto não deve ser nulo");
         }
-        if (StringUtils.isEmpty(String.valueOf(itemDTO.getQuantidade()))){
-            throw  new IllegalArgumentException("Quantidade do pedido não deve ser nula");
+        if (StringUtils.isEmpty(String.valueOf(itemDTO.getQuantidade()))) {
+            throw new IllegalArgumentException("Quantidade do pedido não deve ser nula");
         }
+
 
     }
 

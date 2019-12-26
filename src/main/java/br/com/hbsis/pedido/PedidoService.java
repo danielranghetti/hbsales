@@ -3,6 +3,7 @@ package br.com.hbsis.pedido;
 import br.com.hbsis.ferramentas.Email;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
+import br.com.hbsis.itens.IItemRepository;
 import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.itens.ItemService;
@@ -33,22 +34,24 @@ public class PedidoService {
     private final PeriodoVendaService periodoVendaService;
     private final ItemService itemService;
     private final ProdutoService produtoService;
+    private final IItemRepository iItemRepository;
 
 
     private final Email email;
 
-    public PedidoService(IPedidoRepository iPedidoRepository, FuncionarioService funcionarioService, PeriodoVendaService periodoVendaService, @Lazy ItemService itemService, ProdutoService produtoService, Email email) {
+    public PedidoService(IPedidoRepository iPedidoRepository, FuncionarioService funcionarioService, PeriodoVendaService periodoVendaService, @Lazy ItemService itemService, ProdutoService produtoService, IItemRepository iItemRepository, Email email) {
         this.iPedidoRepository = iPedidoRepository;
         this.funcionarioService = funcionarioService;
         this.periodoVendaService = periodoVendaService;
         this.itemService = itemService;
         this.produtoService = produtoService;
+        this.iItemRepository = iItemRepository;
         this.email = email;
     }
 
     public PedidoDTO save(PedidoDTO pedidoDTO) {
         Pedido pedido = new Pedido();
-        List<Item> itemList = new ArrayList<>();
+        List<ItemDTO> itemList = new ArrayList<>();
 
         this.validate(pedidoDTO);
 
@@ -64,10 +67,10 @@ public class PedidoService {
             Item item = new Item();
             LOGGER.info("Salvando itens");
             itemDTO.setPedido(pedido.getId());
-            itemService.save(itemDTO);
             item.setQuantidade(itemDTO.getQuantidade());
             item.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
-            itemList.add(item);
+            itemService.save(itemDTO);
+            itemList.add(itemDTO);
 
         }
 
@@ -87,9 +90,14 @@ public class PedidoService {
     }
     public Pedido findByPedidoId(Long id) {
         Optional<Pedido> pedidoOptional = this.iPedidoRepository.findById(id);
+        Pedido pedido = new Pedido();
+        List<Item> itemList;
+        itemList = iItemRepository.findByPedido(pedido);
 
         if (pedidoOptional.isPresent()) {
-            return pedidoOptional.get();
+            for (Item item : itemList) {
+                return pedidoOptional.get();
+            }
         }
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
@@ -109,7 +117,6 @@ public class PedidoService {
             pedidoExistente.setData(LocalDate.now());
             pedidoExistente.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
             pedidoExistente.setPeriodoVenda(periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
-
             pedidoExistente.setStatus(pedidoDTO.getStatus().toUpperCase());
 
             pedidoExistente = this.iPedidoRepository.save(pedidoExistente);

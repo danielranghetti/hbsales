@@ -57,8 +57,9 @@ public class CsvPedido {
 
         for (Pedido pedido : pedidos) {
             itemList = iItemRepository.findByPedido(pedido);
-            for (Item item: itemList)
-            icsvWriter.writeNext(new String[]{item.getProduto().getNome(), String.valueOf(item.getQuantidade()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "---" + mascaraCnpj.formatCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
+            for (Item item : itemList) {
+                icsvWriter.writeNext(new String[]{item.getProduto().getNome(), String.valueOf(item.getQuantidade()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "---" + mascaraCnpj.formatCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
+            }
         }
     }
 
