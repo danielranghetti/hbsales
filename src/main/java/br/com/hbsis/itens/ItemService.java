@@ -86,10 +86,4 @@ public class ItemService {
         LOGGER.info("Executando o delete para item de ID:[{}]",id);
         this.iItemRepository.deleteById(id);
     }
-
-
-
-
-
-
 }

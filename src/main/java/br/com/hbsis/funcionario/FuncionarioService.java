@@ -1,6 +1,7 @@
 package br.com.hbsis.funcionario;
 
 
+import br.com.hbsis.conexao.EmployeeSalvaDTO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
