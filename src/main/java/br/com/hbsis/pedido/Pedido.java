@@ -2,10 +2,12 @@ package br.com.hbsis.pedido;
 
 
 import br.com.hbsis.funcionario.Funcionario;
+import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "seg_pedidos")
@@ -21,14 +23,12 @@ public class Pedido {
     @Column(name = "data", length = 15)
     private LocalDate data;
 
-
     @ManyToOne
     @JoinColumn(name = "id_funcionario", referencedColumnName = "id")
     private Funcionario funcionario;
     @ManyToOne
     @JoinColumn(name = "id_periodo_venda",referencedColumnName = "id")
     private PeriodoVenda periodoVenda;
-
 
     public Long getId() {
         return id;

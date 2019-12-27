@@ -1,6 +1,6 @@
 package br.com.hbsis.pedido;
 
-import br.com.hbsis.itens.Item;
+
 import br.com.hbsis.itens.ItemDTO;
 
 import java.time.LocalDate;
@@ -29,6 +29,7 @@ public class PedidoDTO {
         this.status = status;
         this.codPedido = codPedido;
 
+
     }
     public static PedidoDTO of(Pedido pedido) {
         return new PedidoDTO(
@@ -38,6 +39,7 @@ public class PedidoDTO {
                 pedido.getData(),
                 pedido.getStatus(),
                 pedido.getCodPedido()
+
 
         );
     }

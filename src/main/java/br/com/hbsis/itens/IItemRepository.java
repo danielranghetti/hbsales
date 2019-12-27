@@ -6,7 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+
 @Repository
 public interface IItemRepository extends JpaRepository<Item,Long> {
     List<Item> findByPedido(Pedido pedido);
+
+
 }

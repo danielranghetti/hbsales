@@ -21,7 +21,6 @@ public class ItemRest {
     public ItemDTO save(@RequestBody ItemDTO itemDTO){
         LOGGER.info("Recebendo solicitação de persistência de categoria...");
         LOGGER.debug("Payload: {}",itemDTO);
-
         return this.itemService.save(itemDTO);
     }
     @GetMapping("/id")
@@ -29,6 +28,7 @@ public class ItemRest {
         LOGGER.info("Recebendo find by ID...id: [{}]",id);
         return this.itemService.findById(id);
     }
+
     @DeleteMapping("/id")
     public void delete(@PathVariable("id") Long id){
         LOGGER.info("Recebendo delete para o item de ID: {}",id);

@@ -1,4 +1,4 @@
-package br.com.hbsis.funcionario;
+package br.com.hbsis.conexao;
 
 public class EmployeeSalvaDTO {
     private String employeeName;

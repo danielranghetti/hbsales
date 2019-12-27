@@ -1,5 +1,6 @@
 package br.com.hbsis.pedido;
 
+import br.com.hbsis.conexao.InvoiceDTO;
 import br.com.hbsis.ferramentas.Email;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
@@ -7,18 +8,21 @@ import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.itens.ItemService;
 import br.com.hbsis.periodoVenda.PeriodoVendaService;
+import br.com.hbsis.produto.IProdutoRepository;
+import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import sun.nio.cs.ext.IBM300;
 
 import java.time.LocalDate;
-
 import java.util.ArrayList;
 import java.util.Collections;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -50,6 +54,7 @@ public class PedidoService {
         Pedido pedido = new Pedido();
         List<Item> itemList = new ArrayList<>();
 
+
         this.validate(pedidoDTO);
 
         pedido.setCodPedido(pedidoDTO.getCodPedido());
@@ -59,39 +64,44 @@ public class PedidoService {
         pedido.setPeriodoVenda(periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
         pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
 
-        pedido = this.iPedidoRepository.save(pedido);
-        for (ItemDTO itemDTO : pedidoDTO.getItemDTOList()){
-            Item item = new Item();
-            LOGGER.info("Salvando itens");
-            itemDTO.setPedido(pedido.getId());
-            itemService.save(itemDTO);
-            item.setQuantidade(itemDTO.getQuantidade());
-            item.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
-            itemList.add(item);
+
+        if (invoiceValidarPedido(pedido.getPeriodoVenda().getFornecedor().getCnpj(), pedido.getFuncionario().getUuid(), parserItem(pedidoDTO.getItemDTOList(), pedido), totalValue(pedidoDTO.getItemDTOList()))) {
+            pedido = this.iPedidoRepository.save(pedido);
+
+            for (ItemDTO itemDTO : pedidoDTO.getItemDTOList()) {
+                Item item = new Item();
+                LOGGER.info("Salvando itens");
+                itemDTO.setPedido(pedido.getId());
+                itemService.save(itemDTO);
+                item.setQuantidade(itemDTO.getQuantidade());
+                item.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
+                itemList.add(item);
+
+            }
+
+            LOGGER.info("Enviando e-mail");
+            email.enviarEmailDataRetirada(pedido);
+            LOGGER.info("E-mail enviado com sucesso");
 
         }
-
-        LOGGER.info("Enviando e-mail");
-        email.enviarEmailDataRetirada(pedido);
-        LOGGER.info("E-mail enviado com sucesso");
         return PedidoDTO.of(pedido);
     }
 
     public PedidoDTO findByid(Long id) {
         Optional<Pedido> pedidoOptional = this.iPedidoRepository.findById(id);
 
-        if (((Optional) pedidoOptional).isPresent()) {
+        if (pedidoOptional.isPresent()) {
             return PedidoDTO.of(pedidoOptional.get());
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
+
     public Pedido findByPedidoId(Long id) {
         Optional<Pedido> pedidoOptional = this.iPedidoRepository.findById(id);
 
         if (pedidoOptional.isPresent()) {
             return pedidoOptional.get();
         }
-
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
@@ -103,7 +113,7 @@ public class PedidoService {
             Pedido pedidoExistente = pedidoExistenteOptional.get();
 
             LOGGER.info("Atualizando pedido... id:[{}]", pedidoExistente.getId());
-            LOGGER.debug("Payloa: {}", pedidoDTO);
+            LOGGER.debug("Payload: {}", pedidoDTO);
             LOGGER.debug("Pedido existente:{}", pedidoExistente);
 
             pedidoExistente.setData(LocalDate.now());
@@ -218,7 +228,7 @@ public class PedidoService {
 
     public String gerandoCod() {
         List codigos = new ArrayList();
-        for (int i = 1; i < 61; i++) { //Sequencia da mega sena
+        for (int i = 1; i < 61; i++) {
             codigos.add(i);
 
         }
@@ -302,6 +312,39 @@ public class PedidoService {
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
+
+    public double totalValue(List<ItemDTO> itemDTOS){
+        double valorTotal = 0;
+        for (ItemDTO itemDTO : itemDTOS){
+            Produto produto = new Produto();
+            produto.getPreco();
+            valorTotal += (produto.getPreco() * itemDTO.getQuantidade());
+        }
+        return valorTotal;
+    }
+    private List<Item> parserItem(List<ItemDTO> itemDTOS, Pedido pedido){
+        List<Item> items = new ArrayList<>();
+        for (ItemDTO itemDTO : itemDTOS){
+            Item item = new Item();
+            item.setPedido(pedido);
+            item.setQuantidade(itemDTO.getQuantidade());
+            item.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
+            items.add(item);
+        }
+        return items;
+    }
+
+    private boolean invoiceValidarPedido(String cnpjFornecedor, String uuid, List<Item> items, double totalValue) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpEntity<InvoiceDTO> httpEntity = new HttpEntity<>(InvoiceDTO.parser(cnpjFornecedor, uuid, items, totalValue));
+        ResponseEntity<InvoiceDTO> responseEntity = restTemplate.exchange("http://10.2.54.25:9999/v2/api-docs", HttpMethod.POST, httpEntity, InvoiceDTO.class);
+        if (responseEntity.getStatusCodeValue() == 200 || responseEntity.getStatusCodeValue() == 201) {
+            return true;
+        }
+        throw new IllegalArgumentException("Não foi possivel fazer a validação na Api" + responseEntity.getStatusCodeValue());
+    }
+
 
 }
 
