@@ -13,6 +13,7 @@ import br.com.hbsis.produto.IProdutoRepository;
 import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
 import com.opencsv.*;
+import org.bouncycastle.pqc.jcajce.provider.newhope.BCNHPrivateKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -194,9 +195,12 @@ public class CsvProduto {
                 String nomeLinha = resultado[7];
                 String codigocategoria = resultado[8];
                 String nomeCategoria = resultado[9];
+                String cnpj = resultado[10].replaceAll("[^0-9]","");
 
-                if (conexaoFornecedor.existsById(id)) {
-                    if (!iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
+
+
+                if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
+
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
                         categoria.setFornecedor(conexaoFornecedor.findByFornecedorId(id));
@@ -261,8 +265,6 @@ public class CsvProduto {
                             produtoExistente.setValidade(datavalidade);
                             produtoExistente.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
                             iProdutoRepository.save(produtoExistente);
-
-                            System.out.println(produtoExistente);
                         }
                     } else if (!iProdutoRepository.existsByCodProduto(codProduto)) {
 
