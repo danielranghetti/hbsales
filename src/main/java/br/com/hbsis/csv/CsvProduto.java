@@ -11,6 +11,7 @@ import br.com.hbsis.produto.IProdutoRepository;
 import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
 import com.opencsv.*;
+import org.bouncycastle.pqc.jcajce.provider.newhope.BCNHPrivateKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -190,9 +191,14 @@ public class CsvProduto {
                 String nomeLinha = resultado[7];
                 String codigocategoria = resultado[8];
                 String nomeCategoria = resultado[9];
+                String cnpj = resultado[10].replaceAll("[^0-9]","");
 
-                if (conexaoFornecedor.existsById(id)) {
-                    if (!conexaoCategoria.existsByCodigoCategoria(codigocategoria)) {
+
+
+
+                if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
+                    if (!iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
+        
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
                         categoria.setFornecedor(conexaoFornecedor.findByFornecedorId(id));
@@ -222,12 +228,12 @@ public class CsvProduto {
                         iLinhaCategoriaRepository.save(linhaCategoria);
 
                     } else if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria)) {
-
                         linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
                         Optional<LinhaCategoria> linhaCategoriaOptional = this.iLinhaCategoriaRepository.findByCodLinhaCategoria(codLinhaCategoria);
                         LOGGER.info("Alterando linha... id:{}", linhaCategoria.getId());
                         LOGGER.debug("Payload: {}", linhaCategoria);
                         LOGGER.debug("Linha Categoria Existente: {}", linhaCategoria);
+
                         if (linhaCategoriaOptional.isPresent()) {
                             LinhaCategoria linhaExistente = linhaCategoriaOptional.get();
                             linhaExistente.setCodLinhaCategoria(codLinhaCategoria);
@@ -237,7 +243,6 @@ public class CsvProduto {
                         }
                     }
                     if (iProdutoRepository.existsByCodProduto(codProduto)) {
-
                         produto = produtoService.findByCodProduto(codProduto);
                         Optional<Produto> produtoOptional = this.iProdutoRepository.findByCodProduto(codProduto);
                         LOGGER.info("Atualizando produto... id:[{}]", produto.getId());
@@ -246,7 +251,6 @@ public class CsvProduto {
 
                         if (produtoOptional.isPresent()) {
                             Produto produtoExistente = produtoOptional.get();
-
 
                             produtoExistente.setCodProduto(codProduto);
                             produtoExistente.setNome(nomeProduto);
@@ -257,8 +261,6 @@ public class CsvProduto {
                             produtoExistente.setValidade(datavalidade);
                             produtoExistente.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
                             iProdutoRepository.save(produtoExistente);
-
-                            System.out.println(produtoExistente);
                         }
                     } else if (!iProdutoRepository.existsByCodProduto(codProduto)) {
 

@@ -1,3 +1,8 @@
-código;nome;preço;quantidade de unidades por caixa;peso ;validade; código da linha de categoria;nome da Linha de Categoria;código da Categoria; nome da Categoria;CNPJ;razão social
-0000000SKL;skol puro Malte;R$2.55;25;650.5g;06/12/2019;00000000SK;Skol;CAT6725008;Cerveja;02.808.708/0067-25;CIA DE BEBIDAS DAS AMERICAS - AMBEV - F.SANTA CATARINA
-0000000STL;Stella long;R$3.98;6;650.0g;25/12/2019;00000000ST;Stella;CAT6725008;Cerveja;02.808.708/0067-25;CIA DE BEBIDAS DAS AMERICAS - AMBEV - F.SANTA CATARINA
+"código";"nome";"preço";"quantidade de unidades por caixa";"peso ";"validade";" código da linha de categoria";"nome da Linha de Categoria";"código da Categoria";" nome da Categoria";"CNPJ";"razão social";""
+"0000000STL";"Stella long";"R$3.98";"6";"650.0g";"25/12/2019";"00000000ST";"Stella";"CAT0555008";"Cerveja";"03.222.357/0005-55";"CIA DE BEBIDAS DAS AMERICAS - AMBEV - F.SANTA CATARINA"
+"0000DSADSA";"skol puro Malte";"R$2.52";"12";"650.5g";"06/12/2019";"00000000SK";"Skol";"CAT0555008";"Cerveja";"03.222.357/0005-55";"CIA DE BEBIDAS DAS AMERICAS - AMBEV - F.SANTA CATARINA"
+"0000000SKL";"skol puro Malte";"R$2.55";"25";"650.5g";"06/12/2019";"00000000SK";"Skol";"CAT0555008";"Cerveja";"03.222.357/0005-55";"CIA DE BEBIDAS DAS AMERICAS - AMBEV - F.SANTA CATARINA"
+"000000SKLL";"skol Lata";"R$2.99";"6";"850.5g";"06/12/2020";"0000000SKL";"Skol Lata";"CAT2900008";"Cerveja";"07.526.557/0029-00";"AMBEV S.A - F. Sta. Catarina"
+"000000STLL";"Stella";"R$3.99";"12";"850.5g";"06/12/2020";"00000000SL";"Stella Lata";"CAT2900008";"Cerveja";"07.526.557/0029-00";"AMBEV S.A - F. Sta. Catarina"
+"0000000BLA";"Brahma Zero";"R$3.99";"12";"850.5g";"06/12/2020";"00000000BR";"Brahma  Lata";"CAT3987008";"Cerveja";"02.808.708/0039-87";"CIA DE BEBIDAS DAS AMERICAS - AMBEV "
+"0000000BLO";"Brahma Extra";"R$2.99";"12";"850.5g";"06/12/2020";"0000000BRL";"Brahma  Long";"CAT3987008";"Cerveja";"02.808.708/0039-87";"CIA DE BEBIDAS DAS AMERICAS - AMBEV "
