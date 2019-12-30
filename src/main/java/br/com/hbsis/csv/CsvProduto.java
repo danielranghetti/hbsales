@@ -4,8 +4,8 @@ import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.CategoriaService;
 import br.com.hbsis.categoria.ICategoriaRepository;
 import br.com.hbsis.ferramentas.MascaraCnpj;
+import br.com.hbsis.fornecedor.ConexaoFornecedor;
 import br.com.hbsis.fornecedor.FornecedorService;
-import br.com.hbsis.fornecedor.IFornecedorRepository;
 import br.com.hbsis.linhaCategoria.ILinhaCategoriaRepository;
 import br.com.hbsis.linhaCategoria.LinhaCategoria;
 import br.com.hbsis.linhaCategoria.LinhaCategoriaService;
@@ -36,21 +36,18 @@ public class CsvProduto {
     private final LinhaCategoriaService linhaCategoriaService;
     private final ICategoriaRepository iCategoriaRepository;
     private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
-    private final IFornecedorRepository iFornecedorRepository;
-    private final FornecedorService fornecedorService;
+    private final ConexaoFornecedor conexaoFornecedor;
     private final CategoriaService categoriaService;
     private final ProdutoService produtoService;
 
 
     @Autowired
-    public CsvProduto(FornecedorService fornecedorService, IProdutoRepository iProdutoRepository, LinhaCategoriaService linhaCategoriaService, ICategoriaRepository iCategoriaRepository, ILinhaCategoriaRepository iLinhaCategoriaRepository, IFornecedorRepository iFornecedorRepository, CategoriaService categoriaService, ProdutoService produtoService) {
-
-        this.fornecedorService = fornecedorService;
+    public CsvProduto(IProdutoRepository iProdutoRepository, LinhaCategoriaService linhaCategoriaService, ICategoriaRepository iCategoriaRepository, ILinhaCategoriaRepository iLinhaCategoriaRepository, ConexaoFornecedor conexaoFornecedor, CategoriaService categoriaService, ProdutoService produtoService) {
         this.iProdutoRepository = iProdutoRepository;
         this.linhaCategoriaService = linhaCategoriaService;
         this.iCategoriaRepository = iCategoriaRepository;
         this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
-        this.iFornecedorRepository = iFornecedorRepository;
+        this.conexaoFornecedor = conexaoFornecedor;
         this.categoriaService = categoriaService;
         this.produtoService = produtoService;
 
@@ -198,11 +195,11 @@ public class CsvProduto {
                 String codigocategoria = resultado[8];
                 String nomeCategoria = resultado[9];
 
-                if (iFornecedorRepository.existsById(id)) {
+                if (conexaoFornecedor.existsById(id)) {
                     if (!iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
-                        categoria.setFornecedor(fornecedorService.findByFornecedorId(id));
+                        categoria.setFornecedor(conexaoFornecedor.findByFornecedorId(id));
                         iCategoriaRepository.save(categoria);
 
                     } else if (iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
@@ -218,7 +215,7 @@ public class CsvProduto {
 
                             categoriaExistente.setCodigoCategoria(codigocategoria);
                             categoriaExistente.setNomeCategoria(nomeCategoria);
-                            categoriaExistente.setFornecedor(fornecedorService.findByFornecedorId(id));
+                            categoriaExistente.setFornecedor(conexaoFornecedor.findByFornecedorId(id));
                             iCategoriaRepository.save(categoriaExistente);
                         }
                     }

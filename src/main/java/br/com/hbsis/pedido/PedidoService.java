@@ -65,8 +65,12 @@ public class PedidoService {
         pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
 
 
+
         if (invoiceValidarPedido(pedido.getPeriodoVenda().getFornecedor().getCnpj(), pedido.getFuncionario().getUuid(), parserItem(pedidoDTO.getItemDTOList(), pedido), totalValue(pedidoDTO.getItemDTOList()))) {
+
             pedido = this.iPedidoRepository.save(pedido);
+            pedido.setItemList(parserItem(pedidoDTO.getItemDTOList(),pedido));
+
 
             for (ItemDTO itemDTO : pedidoDTO.getItemDTOList()) {
                 Item item = new Item();
@@ -79,13 +83,17 @@ public class PedidoService {
 
             }
 
+
             LOGGER.info("Enviando e-mail");
-            email.enviarEmailDataRetirada(pedido);
+            email.enviarEmailDataRetirada(pedido,itemList);
             LOGGER.info("E-mail enviado com sucesso");
 
         }
         return PedidoDTO.of(pedido);
     }
+
+
+
 
     public PedidoDTO findByid(Long id) {
         Optional<Pedido> pedidoOptional = this.iPedidoRepository.findById(id);
@@ -322,6 +330,7 @@ public class PedidoService {
         }
         return valorTotal;
     }
+
     private List<Item> parserItem(List<ItemDTO> itemDTOS, Pedido pedido){
         List<Item> items = new ArrayList<>();
         for (ItemDTO itemDTO : itemDTOS){

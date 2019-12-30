@@ -2,6 +2,7 @@ package br.com.hbsis.pedido;
 
 
 import br.com.hbsis.funcionario.Funcionario;
+import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
 
@@ -29,6 +30,18 @@ public class Pedido {
     @ManyToOne
     @JoinColumn(name = "id_periodo_venda",referencedColumnName = "id")
     private PeriodoVenda periodoVenda;
+
+    @OneToMany(mappedBy = "pedido")
+    private List<Item> itemList;
+
+
+    public List<Item> getItemList() {
+        return itemList;
+    }
+
+    public void setItemList(List<Item> itemList) {
+        this.itemList = itemList;
+    }
 
     public Long getId() {
         return id;
@@ -87,6 +100,7 @@ public class Pedido {
                 ", data=" + data +
                 ", funcionario=" + funcionario +
                 ", periodoVenda=" + periodoVenda +
+                ", itemList=" + itemList +
                 '}';
     }
 }

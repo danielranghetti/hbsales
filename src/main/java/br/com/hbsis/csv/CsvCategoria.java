@@ -4,9 +4,8 @@ import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.CategoriaService;
 import br.com.hbsis.categoria.ICategoriaRepository;
 import br.com.hbsis.ferramentas.MascaraCnpj;
+import br.com.hbsis.fornecedor.ConexaoFornecedor;
 import br.com.hbsis.fornecedor.Fornecedor;
-import br.com.hbsis.fornecedor.FornecedorService;
-import br.com.hbsis.fornecedor.IFornecedorRepository;
 import com.opencsv.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,18 +26,16 @@ public class CsvCategoria {
 
     private final ICategoriaRepository iCategoriaRepository;
     private final MascaraCnpj mascaraCnpj;
-    private final IFornecedorRepository iFornecedorRepository;
-    private  final FornecedorService fornecedorService;
     private final CategoriaService categoriaService;
+    private final ConexaoFornecedor conexaoFornecedor;
 
 
     @Autowired
-    public CsvCategoria(ICategoriaRepository iCategoriaRepository, MascaraCnpj mascaraCnpj, IFornecedorRepository iFornecedorRepository, FornecedorService fornecedorService, CategoriaService categoriaService) {
+    public CsvCategoria(ICategoriaRepository iCategoriaRepository, MascaraCnpj mascaraCnpj, CategoriaService categoriaService, ConexaoFornecedor conexaoFornecedor) {
         this.iCategoriaRepository = iCategoriaRepository;
         this.mascaraCnpj = mascaraCnpj;
-        this.iFornecedorRepository = iFornecedorRepository;
-        this.fornecedorService = fornecedorService;
         this.categoriaService = categoriaService;
+        this.conexaoFornecedor = conexaoFornecedor;
     }
 
     public void csvTocategoriaExport(HttpServletResponse response) throws Exception {
@@ -85,12 +82,12 @@ public class CsvCategoria {
                 if (iCategoriaRepository.existsByCodigoCategoria(codigoCategoria)) {
                     LOGGER.info("Categoria: {}", codigoCategoria + " já existe");
                 } else {
-                    if (iFornecedorRepository.existsByCnpj(cnpj)) {
+                    if (conexaoFornecedor.existsByCnpj(cnpj)) {
 
                         categoria.setCodigoCategoria(codigoCategoria);
                         categoria.setNomeCategoria(nomeCategoria);
                         Fornecedor fornecedor;
-                        fornecedor = fornecedorService.findByFornecedorCnpj(cnpj);
+                        fornecedor = conexaoFornecedor.findByFornecedorCnpj(cnpj);
 
                         categoria.setFornecedor(fornecedor);
                         leitura.add(categoria);
@@ -98,7 +95,7 @@ public class CsvCategoria {
                         Fornecedor fornecedor;
                         categoria.setCodigoCategoria(codigoCategoria);
                         categoria.setNomeCategoria(nomeCategoria);
-                        fornecedor = fornecedorService.findByFornecedorCnpj(cnpj);
+                        fornecedor = conexaoFornecedor.findByFornecedorCnpj(cnpj);
                         LOGGER.info("Categoria: {}", codigoCategoria + " salvando");
 
                         categoria.setFornecedor(fornecedor);

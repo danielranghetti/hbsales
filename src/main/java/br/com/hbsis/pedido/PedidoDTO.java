@@ -1,6 +1,7 @@
 package br.com.hbsis.pedido;
 
 
+
 import br.com.hbsis.itens.ItemDTO;
 
 import java.time.LocalDate;
@@ -16,18 +17,14 @@ public class PedidoDTO {
     private String codPedido;
     private List<ItemDTO> itemDTOList;
 
-
-
-    public PedidoDTO() {
-    }
-
-    public PedidoDTO(Long id, Long funcionario, Long periodoVenda, LocalDate date, String status, String codPedido) {
+    public PedidoDTO(Long id, Long funcionario, Long periodoVenda, LocalDate date, String status, String codPedido ) {
         this.id = id;
         this.funcionario = funcionario;
         this.periodoVenda = periodoVenda;
         this.date = date;
         this.status = status;
         this.codPedido = codPedido;
+
 
 
     }
@@ -39,10 +36,9 @@ public class PedidoDTO {
                 pedido.getData(),
                 pedido.getStatus(),
                 pedido.getCodPedido()
-
-
         );
     }
+
 
     public List<ItemDTO> getItemDTOList() {
         return itemDTOList;
@@ -109,6 +105,7 @@ public class PedidoDTO {
                 ", date=" + date +
                 ", status='" + status + '\'' +
                 ", codPedido='" + codPedido + '\'' +
+                ", itemDTOList=" + itemDTOList +
                 '}';
     }
 

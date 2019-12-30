@@ -1,8 +1,7 @@
 package br.com.hbsis.periodoVenda;
 
 
-import br.com.hbsis.fornecedor.FornecedorService;
-import br.com.hbsis.fornecedor.IFornecedorRepository;
+import br.com.hbsis.fornecedor.ConexaoFornecedor;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +16,11 @@ public class PeriodoVendaService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PeriodoVendaService.class);
 
     private final IPeriodoVendaRepository iPeriodoVendaRepository;
-    private final IFornecedorRepository iFornecedorRepository;
-    private final FornecedorService fornecedorService;
+   private final ConexaoFornecedor conexaoFornecedor;
 
-
-    public PeriodoVendaService(IPeriodoVendaRepository iPeriodoVendaRepository, IFornecedorRepository iFornecedorRepository, FornecedorService fornecedorService) {
+    public PeriodoVendaService(IPeriodoVendaRepository iPeriodoVendaRepository,ConexaoFornecedor conexaoFornecedor) {
         this.iPeriodoVendaRepository = iPeriodoVendaRepository;
-        this.iFornecedorRepository = iFornecedorRepository;
-        this.fornecedorService = fornecedorService;
-
+        this.conexaoFornecedor = conexaoFornecedor;
     }
 
     public PeriodoVendaDTO save(PeriodoVendaDTO periodoVendaDTO) {
@@ -42,7 +37,7 @@ public class PeriodoVendaService {
         periodoVenda.setDataFinal(periodoVendaDTO.getDataFinal());
         periodoVenda.setDataRetirada(periodoVendaDTO.getDataRetirada());
         periodoVenda.setDescricao(periodoVendaDTO.getDescricao());
-        periodoVenda.setFornecedor(fornecedorService.findByFornecedorId(periodoVendaDTO.getFornecedor()));
+        periodoVenda.setFornecedor(conexaoFornecedor.findByFornecedorId(periodoVendaDTO.getFornecedor()));
 
         periodoVenda = this.iPeriodoVendaRepository.save(periodoVenda);
         return PeriodoVendaDTO.of(periodoVenda);
@@ -120,7 +115,7 @@ public class PeriodoVendaService {
             periodoVendaExistente.setDataInicio(periodoVendaDTO.getDataInicio());
             periodoVendaExistente.setDataFinal(periodoVendaDTO.getDataFinal());
             periodoVendaExistente.setDataRetirada(periodoVendaDTO.getDataRetirada());
-            periodoVendaExistente.setFornecedor(fornecedorService.findByFornecedorId(periodoVendaDTO.getFornecedor()));
+            periodoVendaExistente.setFornecedor(conexaoFornecedor.findByFornecedorId(periodoVendaDTO.getFornecedor()));
 
             periodoVendaExistente = this.iPeriodoVendaRepository.save(periodoVendaExistente);
             return PeriodoVendaDTO.of(periodoVendaExistente);
