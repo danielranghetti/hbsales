@@ -3,7 +3,7 @@ package br.com.hbsis.fornecedor;
 import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.CategoriaDTO;
 import br.com.hbsis.categoria.CategoriaService;
-import br.com.hbsis.categoria.ICategoriaRepository;
+import br.com.hbsis.categoria.ConexaoCategoria;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,20 +15,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class FornecedorService {
+ class FornecedorService {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FornecedorService.class);
 
-   private final ConexaoFornecedor conexaoFornecedor;
+    private final ConexaoFornecedor conexaoFornecedor;
     private final CategoriaService categoriaService;
-    private final ICategoriaRepository iCategoriaRepository;
+    private final ConexaoCategoria conexaoCategoria;
 
     @Autowired
-    public FornecedorService(ConexaoFornecedor conexaoFornecedor, @Lazy CategoriaService categoriaService, ICategoriaRepository iCategoriaRepository) {
+    public FornecedorService(ConexaoFornecedor conexaoFornecedor, @Lazy CategoriaService categoriaService, ConexaoCategoria conexaoCategoria) {
         this.conexaoFornecedor = conexaoFornecedor;
         this.categoriaService = categoriaService;
-        this.iCategoriaRepository = iCategoriaRepository;
+        this.conexaoCategoria = conexaoCategoria;
+
     }
 
     public FornecedorDTO findById(Long id) {
@@ -108,7 +109,7 @@ public class FornecedorService {
             Fornecedor fornecedorExistente = fornecedorExistenteOptional.get();
             Fornecedor fornecedor;
             fornecedor = conexaoFornecedor.findByFornecedorId(id);
-            List<Categoria> categorias= iCategoriaRepository.findByFornecedor(fornecedor);
+            List<Categoria> categorias= conexaoCategoria.findByFornecedor(fornecedor);
 
             LOGGER.info("Atualizando fornecedor... id: [{}]", fornecedorExistente.getId());
             LOGGER.debug("Payload: {}", fornecedorDTO);

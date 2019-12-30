@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ICategoriaRepository extends JpaRepository<Categoria, Long> {
+interface ICategoriaRepository extends JpaRepository<Categoria, Long> {
 
     boolean existsByNomeCategoria(String nomeCategoria);
     boolean existsCategoriaProdutoByFornecedorId(Long id);

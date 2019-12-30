@@ -14,19 +14,19 @@ public class CategoriaService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoriaService.class);
 
-    private final ICategoriaRepository iCategoriaRepository;
+    private final ConexaoCategoria conexaoCategoria;
     private final ConexaoFornecedor conexaoFornecedor;
 
 
-    public CategoriaService(ICategoriaRepository iCategoriaRepository, ConexaoFornecedor conexaoFornecedor) {
-        this.iCategoriaRepository = iCategoriaRepository;
+    public CategoriaService(ConexaoCategoria conexaoCategoria, ConexaoFornecedor conexaoFornecedor) {
+        this.conexaoCategoria = conexaoCategoria;
         this.conexaoFornecedor = conexaoFornecedor;
 
     }
 
     public List<Categoria> saveAll(List<Categoria> categoria) throws Exception {
 
-        return iCategoriaRepository.saveAll(categoria);
+        return conexaoCategoria.saveAll(categoria);
     }
 
     public CategoriaDTO save(CategoriaDTO categoriaDTO) {
@@ -49,7 +49,7 @@ public class CategoriaService {
         categoria.setCodigoCategoria(incial + ultDig + codigoComZero);
         categoria.setNomeCategoria(categoriaDTO.getNomeCategoria());
 
-        categoria = this.iCategoriaRepository.save(categoria);
+        categoria = this.conexaoCategoria.save(categoria);
         return CategoriaDTO.of(categoria);
     }
 
@@ -76,35 +76,17 @@ public class CategoriaService {
     }
 
     public CategoriaDTO findById(Long id) {
-        Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findById(id);
+        Optional<Categoria> categoriaOptional = this.conexaoCategoria.findById(id);
 
-        if (((Optional) categoriaOptional).isPresent()) {
+        if (categoriaOptional.isPresent()) {
             return CategoriaDTO.of(categoriaOptional.get());
         }
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
-    public Categoria findByCodigoCategoria(String codigoCategoria) {
-        Optional<Categoria> optionalCategoria = this.iCategoriaRepository.findByCodigoCategoria(codigoCategoria);
-
-        if (optionalCategoria.isPresent()) {
-            return optionalCategoria.get();
-        }
-        throw new IllegalArgumentException(String.format("Codigo categoria %s não existe", codigoCategoria));
-    }
-
-    public Categoria findByCategoriaId(Long id) {
-        Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findById(id);
-
-        if ((categoriaOptional).isPresent()) {
-            return categoriaOptional.get();
-        }
-        throw new IllegalArgumentException(String.format("ID %s não existe", id));
-    }
-
     public CategoriaDTO update(CategoriaDTO categoriaDTO, Long id) {
-        Optional<Categoria> categoriaExistenteOptional = this.iCategoriaRepository.findById(id);
+        Optional<Categoria> categoriaExistenteOptional = this.conexaoCategoria.findById(id);
 
         if (categoriaExistenteOptional.isPresent()) {
             Categoria categoriaExistente = categoriaExistenteOptional.get();
@@ -126,7 +108,7 @@ public class CategoriaService {
             categoriaExistente.setCodigoCategoria(incial + ultDig + codigoComZero);
             categoriaExistente.setNomeCategoria(categoriaDTO.getNomeCategoria());
 
-            categoriaExistente = this.iCategoriaRepository.save(categoriaExistente);
+            categoriaExistente = this.conexaoCategoria.save(categoriaExistente);
 
             return CategoriaDTO.of(categoriaExistente);
         }
@@ -136,7 +118,7 @@ public class CategoriaService {
     public void delete(Long id) {
         LOGGER.info("Executando delete para categoria de ID: [{}]", id);
 
-        this.iCategoriaRepository.deleteById(id);
+        this.conexaoCategoria.delete(id);
     }
 
 

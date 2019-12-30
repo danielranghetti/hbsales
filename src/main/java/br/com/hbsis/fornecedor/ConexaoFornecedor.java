@@ -12,15 +12,7 @@ public class ConexaoFornecedor {
         this.iFornecedorRepository = iFornecedorRepository;
     }
 
-    public FornecedorDTO findByFornecedorDTOId(Long id) {
-        Optional<Fornecedor> fornecedorOptional = this.iFornecedorRepository.findById(id);
 
-        if (fornecedorOptional.isPresent()) {
-            return FornecedorDTO.of(fornecedorOptional.get());
-        }
-
-        throw new IllegalArgumentException(String.format("ID %s não existe", id));
-    }
     public Optional<Fornecedor> findById(Long id) {
         Optional<Fornecedor> fornecedorOptional = this.iFornecedorRepository.findById(id);
 
@@ -59,15 +51,8 @@ public class ConexaoFornecedor {
         }
         return fornecedor;
     }
-    public Fornecedor update(Fornecedor fornecedor){
-        try {
-            fornecedor = iFornecedorRepository.save(fornecedor);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return fornecedor;
 
-    }
+
 
 
     public void delete(Long id){
