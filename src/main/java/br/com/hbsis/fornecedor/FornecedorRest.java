@@ -12,12 +12,13 @@ public class FornecedorRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FornecedorRest.class);
 
-    private final FornecedorService fornecedorService;
+   private final FornecedorService fornecedorService;
 
-    @Autowired
+   @Autowired
     public FornecedorRest(FornecedorService fornecedorService) {
         this.fornecedorService = fornecedorService;
     }
+
 
     @PostMapping
     public FornecedorDTO save(@RequestBody FornecedorDTO fornecedorDTO) {

@@ -1,6 +1,6 @@
 package br.com.hbsis.categoria;
 
-import br.com.hbsis.fornecedor.FornecedorService;
+import br.com.hbsis.fornecedor.ConexaoFornecedor;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +15,12 @@ public class CategoriaService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoriaService.class);
 
     private final ICategoriaRepository iCategoriaRepository;
-    private final FornecedorService fornecedorService;
+    private final ConexaoFornecedor conexaoFornecedor;
 
 
-    public CategoriaService(ICategoriaRepository iCategoriaRepository, FornecedorService fornecedorService) {
+    public CategoriaService(ICategoriaRepository iCategoriaRepository, ConexaoFornecedor conexaoFornecedor) {
         this.iCategoriaRepository = iCategoriaRepository;
-        this.fornecedorService = fornecedorService;
+        this.conexaoFornecedor = conexaoFornecedor;
 
     }
 
@@ -39,7 +39,7 @@ public class CategoriaService {
 
         String incial = "CAT";
 
-        categoria.setFornecedor(fornecedorService.findByFornecedorId(categoriaDTO.getFornecedor()));
+        categoria.setFornecedor(conexaoFornecedor.findByFornecedorId(categoriaDTO.getFornecedor()));
         String cnpj = categoria.getFornecedor().getCnpj();
         String ultDig = cnpj.substring(cnpj.length() - 4);
 
@@ -115,7 +115,7 @@ public class CategoriaService {
 
             String incial = "CAT";
 
-            categoriaExistente.setFornecedor(fornecedorService.findByFornecedorId(categoriaDTO.getFornecedor()));
+            categoriaExistente.setFornecedor(conexaoFornecedor.findByFornecedorId(categoriaDTO.getFornecedor()));
             String cnpj = categoriaExistente.getFornecedor().getCnpj();
             String ultDig = cnpj.substring(cnpj.length() - 4);
 
