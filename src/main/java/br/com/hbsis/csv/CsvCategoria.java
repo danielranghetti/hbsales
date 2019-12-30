@@ -2,7 +2,7 @@ package br.com.hbsis.csv;
 
 import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.CategoriaService;
-import br.com.hbsis.categoria.ICategoriaRepository;
+import br.com.hbsis.categoria.ConexaoCategoria;
 import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.fornecedor.ConexaoFornecedor;
 import br.com.hbsis.fornecedor.Fornecedor;
@@ -24,18 +24,19 @@ import java.util.List;
 public class CsvCategoria {
     private static final Logger LOGGER = LoggerFactory.getLogger(CsvCategoria.class);
 
-    private final ICategoriaRepository iCategoriaRepository;
+
     private final MascaraCnpj mascaraCnpj;
     private final CategoriaService categoriaService;
     private final ConexaoFornecedor conexaoFornecedor;
+    private final ConexaoCategoria conexaoCategoria;
 
 
     @Autowired
-    public CsvCategoria(ICategoriaRepository iCategoriaRepository, MascaraCnpj mascaraCnpj, CategoriaService categoriaService, ConexaoFornecedor conexaoFornecedor) {
-        this.iCategoriaRepository = iCategoriaRepository;
+    public CsvCategoria(MascaraCnpj mascaraCnpj, CategoriaService categoriaService, ConexaoFornecedor conexaoFornecedor, ConexaoCategoria conexaoCategoria) {
         this.mascaraCnpj = mascaraCnpj;
         this.categoriaService = categoriaService;
         this.conexaoFornecedor = conexaoFornecedor;
+        this.conexaoCategoria = conexaoCategoria;
     }
 
     public void csvTocategoriaExport(HttpServletResponse response) throws Exception {
@@ -55,7 +56,7 @@ public class CsvCategoria {
         String[] headerCSV = {"codigo_categoria", "nome_categoria", "razao_social_fornecedor", "cnpj_fornecedor "};
         csvWriter.writeNext(headerCSV);
 
-        for (Categoria linha : iCategoriaRepository.findAll()) {
+        for (Categoria linha : conexaoCategoria.findAll()) {
             csvWriter.writeNext(new String[]{linha.getCodigoCategoria(),linha.getNomeCategoria(),linha.getFornecedor().getRazaoSocial(),mascaraCnpj.formatCnpj(linha.getFornecedor().getCnpj())}
             );
         }
@@ -79,27 +80,20 @@ public class CsvCategoria {
                 String cnpj = resultado[3].replaceAll("[^0-9]", "");
                 String nomeCategoria = resultado[1];
 
-                if (iCategoriaRepository.existsByCodigoCategoria(codigoCategoria)) {
+                if (conexaoCategoria.existsByCodigoCategoria(codigoCategoria)) {
                     LOGGER.info("Categoria: {}", codigoCategoria + " já existe");
                 } else {
                     if (conexaoFornecedor.existsByCnpj(cnpj)) {
+                        if (!conexaoCategoria.existsByCodigoCategoria(codigoCategoria)) {
+                            Fornecedor fornecedor;
+                            categoria.setCodigoCategoria(codigoCategoria);
+                            categoria.setNomeCategoria(nomeCategoria);
+                            fornecedor = conexaoFornecedor.findByFornecedorCnpj(cnpj);
+                            LOGGER.info("Categoria: {}", codigoCategoria + " salvando");
 
-                        categoria.setCodigoCategoria(codigoCategoria);
-                        categoria.setNomeCategoria(nomeCategoria);
-                        Fornecedor fornecedor;
-                        fornecedor = conexaoFornecedor.findByFornecedorCnpj(cnpj);
-
-                        categoria.setFornecedor(fornecedor);
-                        leitura.add(categoria);
-                    } else if (!iCategoriaRepository.existsByCodigoCategoria(codigoCategoria)) {
-                        Fornecedor fornecedor;
-                        categoria.setCodigoCategoria(codigoCategoria);
-                        categoria.setNomeCategoria(nomeCategoria);
-                        fornecedor = conexaoFornecedor.findByFornecedorCnpj(cnpj);
-                        LOGGER.info("Categoria: {}", codigoCategoria + " salvando");
-
-                        categoria.setFornecedor(fornecedor);
-                        leitura.add(categoria);
+                            categoria.setFornecedor(fornecedor);
+                            leitura.add(categoria);
+                        }
                     }
                 }
 
@@ -107,7 +101,7 @@ public class CsvCategoria {
                 e.printStackTrace();
             }
         }
-        return iCategoriaRepository.saveAll(leitura);
+        return conexaoCategoria.saveAll(leitura);
     }
 
     public void importFromCsv(MultipartFile file) throws Exception {

@@ -1,8 +1,7 @@
 package br.com.hbsis.csv;
 
 import br.com.hbsis.categoria.Categoria;
-import br.com.hbsis.categoria.CategoriaService;
-import br.com.hbsis.categoria.ICategoriaRepository;
+import br.com.hbsis.categoria.ConexaoCategoria;
 import br.com.hbsis.linhaCategoria.ILinhaCategoriaRepository;
 import br.com.hbsis.linhaCategoria.LinhaCategoria;
 import br.com.hbsis.linhaCategoria.LinhaCategoriaService;
@@ -24,17 +23,16 @@ import java.util.List;
 public class CsvLinhaCategoria {
     private static final Logger LOGGER = LoggerFactory.getLogger(CsvLinhaCategoria.class);
 
-     private final CategoriaService categoriaService;
      private final LinhaCategoriaService linhaCategoriaService;
      private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
-     private final ICategoriaRepository iCategoriaRepository;
+     private final ConexaoCategoria conexaoCategoria;
 
      @Autowired
-    public CsvLinhaCategoria(CategoriaService categoriaService, LinhaCategoriaService linhaCategoriaService, ILinhaCategoriaRepository iLinhaCategoriaRepository, ICategoriaRepository iCategoriaRepository) {
-        this.categoriaService = categoriaService;
+    public CsvLinhaCategoria(LinhaCategoriaService linhaCategoriaService, ILinhaCategoriaRepository iLinhaCategoriaRepository, ConexaoCategoria conexaoCategoria) {
         this.linhaCategoriaService = linhaCategoriaService;
         this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
-        this.iCategoriaRepository = iCategoriaRepository;
+        this.conexaoCategoria = conexaoCategoria;
+
     }
 
 
@@ -83,11 +81,11 @@ public class CsvLinhaCategoria {
                     LOGGER.info("Linha categoria: {}", codLinhacat + " já existe");
                 }
 
-                else if (iCategoriaRepository.existsByCodigoCategoria(codCategoria)) {
+                else if (conexaoCategoria.existsByCodigoCategoria(codCategoria)) {
 
                     linhaCategoria.setCodLinhaCategoria(codLinhacat);
                     linhaCategoria.setNomeLinha(nomeLinha);
-                    categoria = categoriaService.findByCodigoCategoria(codCategoria);
+                    categoria = conexaoCategoria.findByCodigoCategoria1(codCategoria);
 
                     linhaCategoria.setCategoria(categoria);
                     leitura.add(linhaCategoria);
