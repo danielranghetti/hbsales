@@ -230,12 +230,12 @@ public class CsvProduto {
                         iLinhaCategoriaRepository.save(linhaCategoria);
 
                     } else if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria)) {
-
                         linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
                         Optional<LinhaCategoria> linhaCategoriaOptional = this.iLinhaCategoriaRepository.findByCodLinhaCategoria(codLinhaCategoria);
                         LOGGER.info("Alterando linha... id:{}", linhaCategoria.getId());
                         LOGGER.debug("Payload: {}", linhaCategoria);
                         LOGGER.debug("Linha Categoria Existente: {}", linhaCategoria);
+
                         if (linhaCategoriaOptional.isPresent()) {
                             LinhaCategoria linhaExistente = linhaCategoriaOptional.get();
                             linhaExistente.setCodLinhaCategoria(codLinhaCategoria);
@@ -245,7 +245,6 @@ public class CsvProduto {
                         }
                     }
                     if (iProdutoRepository.existsByCodProduto(codProduto)) {
-
                         produto = produtoService.findByCodProduto(codProduto);
                         Optional<Produto> produtoOptional = this.iProdutoRepository.findByCodProduto(codProduto);
                         LOGGER.info("Atualizando produto... id:[{}]", produto.getId());
@@ -254,7 +253,6 @@ public class CsvProduto {
 
                         if (produtoOptional.isPresent()) {
                             Produto produtoExistente = produtoOptional.get();
-
 
                             produtoExistente.setCodProduto(codProduto);
                             produtoExistente.setNome(nomeProduto);
