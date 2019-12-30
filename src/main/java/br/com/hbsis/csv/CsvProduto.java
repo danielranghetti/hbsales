@@ -1,11 +1,9 @@
 package br.com.hbsis.csv;
 
 import br.com.hbsis.categoria.Categoria;
-import br.com.hbsis.categoria.CategoriaService;
-import br.com.hbsis.categoria.ICategoriaRepository;
+import br.com.hbsis.categoria.ConexaoCategoria;
 import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.fornecedor.ConexaoFornecedor;
-import br.com.hbsis.fornecedor.FornecedorService;
 import br.com.hbsis.linhaCategoria.ILinhaCategoriaRepository;
 import br.com.hbsis.linhaCategoria.LinhaCategoria;
 import br.com.hbsis.linhaCategoria.LinhaCategoriaService;
@@ -35,21 +33,19 @@ public class CsvProduto {
     private static final Logger LOGGER = LoggerFactory.getLogger(Produto.class);
     private final IProdutoRepository iProdutoRepository;
     private final LinhaCategoriaService linhaCategoriaService;
-    private final ICategoriaRepository iCategoriaRepository;
     private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
     private final ConexaoFornecedor conexaoFornecedor;
-    private final CategoriaService categoriaService;
+    private final ConexaoCategoria conexaoCategoria;
     private final ProdutoService produtoService;
 
 
     @Autowired
-    public CsvProduto(IProdutoRepository iProdutoRepository, LinhaCategoriaService linhaCategoriaService, ICategoriaRepository iCategoriaRepository, ILinhaCategoriaRepository iLinhaCategoriaRepository, ConexaoFornecedor conexaoFornecedor, CategoriaService categoriaService, ProdutoService produtoService) {
+    public CsvProduto(IProdutoRepository iProdutoRepository, LinhaCategoriaService linhaCategoriaService, ILinhaCategoriaRepository iLinhaCategoriaRepository, ConexaoFornecedor conexaoFornecedor, ConexaoCategoria conexaoCategoria, ProdutoService produtoService) {
         this.iProdutoRepository = iProdutoRepository;
         this.linhaCategoriaService = linhaCategoriaService;
-        this.iCategoriaRepository = iCategoriaRepository;
         this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
         this.conexaoFornecedor = conexaoFornecedor;
-        this.categoriaService = categoriaService;
+        this.conexaoCategoria = conexaoCategoria;
         this.produtoService = produtoService;
 
     }
@@ -199,16 +195,18 @@ public class CsvProduto {
 
 
 
+
                 if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
                     if (!iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
+        
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
                         categoria.setFornecedor(conexaoFornecedor.findByFornecedorId(id));
-                        iCategoriaRepository.save(categoria);
+                        conexaoCategoria.save(categoria);
 
-                    } else if (iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
-                        categoria = categoriaService.findByCodigoCategoria(codigocategoria);
-                        Optional<Categoria> categoriaOptional = this.iCategoriaRepository.findByCodigoCategoria(codigocategoria);
+                    } else if (conexaoCategoria.existsByCodigoCategoria(codigocategoria)) {
+                        categoria = conexaoCategoria.findByCodigoCategoria1(codigocategoria);
+                        Optional<Categoria> categoriaOptional = this.conexaoCategoria.findByCodigoCategoria(codigocategoria);
 
                         if (categoriaOptional.isPresent()) {
                             Categoria categoriaExistente = categoriaOptional.get();
@@ -220,13 +218,13 @@ public class CsvProduto {
                             categoriaExistente.setCodigoCategoria(codigocategoria);
                             categoriaExistente.setNomeCategoria(nomeCategoria);
                             categoriaExistente.setFornecedor(conexaoFornecedor.findByFornecedorId(id));
-                            iCategoriaRepository.save(categoriaExistente);
+                            conexaoCategoria.save(categoriaExistente);
                         }
                     }
                     if (!(iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria))) {
                         linhaCategoria.setCodLinhaCategoria(codLinhaCategoria);
                         linhaCategoria.setNomeLinha(nomeLinha);
-                        linhaCategoria.setCategoria(categoriaService.findByCodigoCategoria(codigocategoria));
+                        linhaCategoria.setCategoria(conexaoCategoria.findByCodigoCategoria1(codigocategoria));
                         iLinhaCategoriaRepository.save(linhaCategoria);
 
                     } else if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria)) {
@@ -240,7 +238,7 @@ public class CsvProduto {
                             LinhaCategoria linhaExistente = linhaCategoriaOptional.get();
                             linhaExistente.setCodLinhaCategoria(codLinhaCategoria);
                             linhaExistente.setNomeLinha(nomeLinha);
-                            linhaCategoria.setCategoria(categoriaService.findByCodigoCategoria(codigocategoria));
+                            linhaCategoria.setCategoria(conexaoCategoria.findByCodigoCategoria1(codigocategoria));
                             iLinhaCategoriaRepository.save(linhaExistente);
                         }
                     }

@@ -1,5 +1,6 @@
 package br.com.hbsis.linhaCategoria;
 import br.com.hbsis.categoria.CategoriaService;
+import br.com.hbsis.categoria.ConexaoCategoria;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +14,11 @@ public class LinhaCategoriaService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LinhaCategoriaService.class);
     private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
-    private final CategoriaService categoriaService;
+    private final ConexaoCategoria conexaoCategoria;
 
-    public LinhaCategoriaService(ILinhaCategoriaRepository iLinhaCategoriaRepository, CategoriaService categoriaService) {
+    public LinhaCategoriaService(ILinhaCategoriaRepository iLinhaCategoriaRepository, ConexaoCategoria conexaoCategoria) {
         this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
-        this.categoriaService = categoriaService;
+        this.conexaoCategoria = conexaoCategoria;
     }
 
     public LinhaCategoriaDTO save(LinhaCategoriaDTO linhaCategoriaDTO) {
@@ -36,7 +37,7 @@ public class LinhaCategoriaService {
 
         linhaCategoria.setCodLinhaCategoria(codigoCompelto);
         linhaCategoria.setNomeLinha(linhaCategoriaDTO.getNomeLinha());
-        linhaCategoria.setCategoria(categoriaService.findByCategoriaId(linhaCategoriaDTO.getCategoria()));
+        linhaCategoria.setCategoria(conexaoCategoria.findByCategoriaId(linhaCategoriaDTO.getCategoria()));
 
 
         linhaCategoria = this.iLinhaCategoriaRepository.save(linhaCategoria);
@@ -93,7 +94,7 @@ public class LinhaCategoriaService {
 
             linhaCategoriaExistente.setCodLinhaCategoria(codigoCompelto);
             linhaCategoriaExistente.setNomeLinha(linhaCategoriaDTO.getNomeLinha());
-            linhaCategoriaExistente.setCategoria(categoriaService.findByCategoriaId(linhaCategoriaDTO.getCategoria()));
+            linhaCategoriaExistente.setCategoria(conexaoCategoria.findByCategoriaId(linhaCategoriaDTO.getCategoria()));
 
             linhaCategoriaExistente = this.iLinhaCategoriaRepository.save(linhaCategoriaExistente);
 
