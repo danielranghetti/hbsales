@@ -200,7 +200,7 @@ public class CsvProduto {
 
 
                 if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
-
+                    if (!iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
                         categoria.setFornecedor(conexaoFornecedor.findByFornecedorId(id));
