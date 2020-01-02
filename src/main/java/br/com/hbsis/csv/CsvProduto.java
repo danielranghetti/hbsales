@@ -11,7 +11,6 @@ import br.com.hbsis.produto.IProdutoRepository;
 import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
 import com.opencsv.*;
-import org.bouncycastle.pqc.jcajce.provider.newhope.BCNHPrivateKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,7 +196,7 @@ public class CsvProduto {
 
 
                 if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
-                    if (!iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
+                    if (!conexaoCategoria.existsByCodigoCategoria(codigocategoria)) {
         
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
