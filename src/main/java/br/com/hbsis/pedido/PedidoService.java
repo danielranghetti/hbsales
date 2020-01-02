@@ -8,7 +8,7 @@ import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.itens.ItemService;
 import br.com.hbsis.periodoVenda.PeriodoVendaService;
-import br.com.hbsis.produto.IProdutoRepository;
+import br.com.hbsis.produto.ConexaoProduto;
 import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
 import org.apache.commons.lang.StringUtils;
@@ -18,8 +18,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import sun.nio.cs.ext.IBM300;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,17 +34,17 @@ public class PedidoService {
     private final FuncionarioService funcionarioService;
     private final PeriodoVendaService periodoVendaService;
     private final ItemService itemService;
-    private final ProdutoService produtoService;
+    private final ConexaoProduto conexaoProduto;
 
 
     private final Email email;
 
-    public PedidoService(IPedidoRepository iPedidoRepository, FuncionarioService funcionarioService, PeriodoVendaService periodoVendaService, @Lazy ItemService itemService, ProdutoService produtoService, Email email) {
+    public PedidoService(IPedidoRepository iPedidoRepository, FuncionarioService funcionarioService, PeriodoVendaService periodoVendaService, @Lazy ItemService itemService, ConexaoProduto conexaoProduto, Email email) {
         this.iPedidoRepository = iPedidoRepository;
         this.funcionarioService = funcionarioService;
         this.periodoVendaService = periodoVendaService;
         this.itemService = itemService;
-        this.produtoService = produtoService;
+        this.conexaoProduto = conexaoProduto;
         this.email = email;
     }
 
@@ -78,7 +76,7 @@ public class PedidoService {
                 itemDTO.setPedido(pedido.getId());
                 itemService.save(itemDTO);
                 item.setQuantidade(itemDTO.getQuantidade());
-                item.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
+                item.setProduto(conexaoProduto.findByProdutoId(itemDTO.getProduto()));
                 itemList.add(item);
 
             }
@@ -337,7 +335,7 @@ public class PedidoService {
             Item item = new Item();
             item.setPedido(pedido);
             item.setQuantidade(itemDTO.getQuantidade());
-            item.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
+            item.setProduto(conexaoProduto.findByProdutoId(itemDTO.getProduto()));
             items.add(item);
         }
         return items;

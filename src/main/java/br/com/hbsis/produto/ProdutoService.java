@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -14,20 +13,15 @@ import java.util.Optional;
 public class ProdutoService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProdutoService.class);
-    private final IProdutoRepository iProdutoRepository;
+    private final ConexaoProduto conexaoProduto;
     private final ConexaoLinhaCategoria conexaoLinhaCategoria;
 
 
 
-    public ProdutoService(IProdutoRepository iProdutoRepository, ConexaoLinhaCategoria conexaoLinhaCategoria) {
-        this.iProdutoRepository = iProdutoRepository;
+    public ProdutoService(ConexaoProduto conexaoProduto, ConexaoLinhaCategoria conexaoLinhaCategoria) {
+        this.conexaoProduto = conexaoProduto;
         this.conexaoLinhaCategoria = conexaoLinhaCategoria;
 
-    }
-
-    public List<Produto> saveAll(List<Produto> produto) throws Exception {
-
-        return iProdutoRepository.saveAll(produto);
     }
 
     public ProdutoDTO save(ProdutoDTO produtoDTO) {
@@ -50,7 +44,7 @@ public class ProdutoService {
         produto.setUnidadeMedida(produtoDTO.getUnidadeMedida());
         produto.setLinhaCategoria(conexaoLinhaCategoria.findByLinhaCategoriaId(produtoDTO.getLinhaCategoria()));
 
-        produto = this.iProdutoRepository.save(produto);
+        produto = this.conexaoProduto.save(produto);
         return ProdutoDTO.of(produto);
     }
 
@@ -60,7 +54,7 @@ public class ProdutoService {
     }
 
     public ProdutoDTO finById(Long id) {
-        Optional<Produto> produtoOptional = this.iProdutoRepository.findById(id);
+        Optional<Produto> produtoOptional = this.conexaoProduto.findById(id);
 
         if (produtoOptional.isPresent()) {
             return ProdutoDTO.of(produtoOptional.get());
@@ -69,28 +63,10 @@ public class ProdutoService {
 
     }
 
-    public Produto findByProdutoId(Long id) {
-        Optional<Produto> produtoOptional = this.iProdutoRepository.findById(id);
 
-        if (produtoOptional.isPresent()) {
-            return produtoOptional.get();
-        }
-
-        throw new IllegalArgumentException(String.format("ID %s não existe", id));
-    }
-
-    public Produto findByCodProduto(String codProduto) {
-        Optional<Produto> produtoOptional = this.iProdutoRepository.findByCodProduto(codProduto);
-
-        if (produtoOptional.isPresent()) {
-            return produtoOptional.get();
-        }
-
-        throw new IllegalArgumentException(String.format("Codigo produto %s não existe", codProduto));
-    }
 
     public ProdutoDTO update(ProdutoDTO produtoDTO, Long id) {
-        Optional<Produto> produtoExistenteOptional = this.iProdutoRepository.findById(id);
+        Optional<Produto> produtoExistenteOptional = this.conexaoProduto.findById(id);
 
         this.validate(produtoDTO);
 
@@ -114,7 +90,7 @@ public class ProdutoService {
             produtoExistente.setLinhaCategoria(conexaoLinhaCategoria.findByLinhaCategoriaId(produtoDTO.getLinhaCategoria()));
 
 
-            produtoExistente = iProdutoRepository.save(produtoExistente);
+            produtoExistente = conexaoProduto.save(produtoExistente);
             return ProdutoDTO.of(produtoExistente);
 
         }
@@ -125,7 +101,7 @@ public class ProdutoService {
     public void delete(Long id) {
         LOGGER.info("Executando delete para categoria de ID: [{}]", id);
 
-        iProdutoRepository.deleteById(id);
+        conexaoProduto.deletePorId(id);
     }
 
     private void validate(ProdutoDTO produtoDTO) {

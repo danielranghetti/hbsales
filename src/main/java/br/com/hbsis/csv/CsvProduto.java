@@ -6,7 +6,7 @@ import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.fornecedor.ConexaoFornecedor;
 import br.com.hbsis.linhaCategoria.ConexaoLinhaCategoria;
 import br.com.hbsis.linhaCategoria.LinhaCategoria;
-import br.com.hbsis.produto.IProdutoRepository;
+import br.com.hbsis.produto.ConexaoProduto;
 import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
 import com.opencsv.*;
@@ -29,20 +29,19 @@ import java.util.Optional;
 @Service
 public class CsvProduto {
     private static final Logger LOGGER = LoggerFactory.getLogger(Produto.class);
-    private final IProdutoRepository iProdutoRepository;
     private final ConexaoLinhaCategoria conexaoLinhaCategoria;
     private final ConexaoFornecedor conexaoFornecedor;
     private final ConexaoCategoria conexaoCategoria;
-    private final ProdutoService produtoService;
+    private final ConexaoProduto conexaoProduto;
 
 
     @Autowired
-    public CsvProduto(IProdutoRepository iProdutoRepository, ConexaoLinhaCategoria conexaoLinhaCategoria, ConexaoFornecedor conexaoFornecedor, ConexaoCategoria conexaoCategoria, ProdutoService produtoService) {
-        this.iProdutoRepository = iProdutoRepository;
-        this.conexaoLinhaCategoria = conexaoLinhaCategoria;
+    public CsvProduto(ConexaoLinhaCategoria conexaoLinhaCategoria, ConexaoFornecedor conexaoFornecedor, ConexaoCategoria conexaoCategoria, ConexaoProduto conexaoProduto) {
+        this.conexaoProduto = conexaoProduto;
+       this.conexaoLinhaCategoria = conexaoLinhaCategoria;
         this.conexaoFornecedor = conexaoFornecedor;
         this.conexaoCategoria = conexaoCategoria;
-        this.produtoService = produtoService;
+
 
     }
 
@@ -61,7 +60,7 @@ public class CsvProduto {
                 "código da Categoria", " nome da Categoria", "CNPJ", "razão social", ""};
         icsvWriter.writeNext(titulo);
 
-        for (Produto linha : iProdutoRepository.findAll())
+        for (Produto linha : conexaoProduto.findAll())
             icsvWriter.writeNext(new String[]{linha.getCodProduto(), linha.getNome(), "R$" + (linha.getPreco()), String.valueOf(linha.getUniCaixa()), linha.getPesoUni() + linha.getUnidadeMedida(),
                     linha.getValidade().format(DateTimeFormatter.ofPattern("dd/MM/yyy")), linha.getLinhaCategoria().getCodLinhaCategoria(), linha.getLinhaCategoria().getNomeLinha(), linha.getLinhaCategoria().getCategoria().getCodigoCategoria(),
                     linha.getLinhaCategoria().getCategoria().getNomeCategoria(), mascaraCnpj.formatCnpj(linha.getLinhaCategoria().getCategoria().getFornecedor().getCnpj()), linha.getLinhaCategoria().getCategoria().getFornecedor().getRazaoSocial()
@@ -83,7 +82,7 @@ public class CsvProduto {
                 "código da Categoria", "nome categoria"};
         icsvWriter.writeNext(titulo);
 
-        for (Produto linha : iProdutoRepository.findAll()) {
+        for (Produto linha : conexaoProduto.findAll()) {
             icsvWriter.writeNext(new String[]{linha.getCodProduto(), linha.getNome(), "R$" + (linha.getPreco()), String.valueOf(linha.getUniCaixa()), linha.getPesoUni() + linha.getUnidadeMedida(),
                    linha.getValidade().format(DateTimeFormatter.ofPattern("dd/MM/yyy")), linha.getLinhaCategoria().getCodLinhaCategoria(), linha.getLinhaCategoria().getNomeLinha(), linha.getLinhaCategoria().getCategoria().getCodigoCategoria(),
                     linha.getLinhaCategoria().getCategoria().getNomeCategoria()
@@ -121,10 +120,11 @@ public class CsvProduto {
                 LocalDate datavalidade = LocalDate.of(ano, mes, dia);
 
 
-                if (iProdutoRepository.existsByCodProduto(codProduto)) {
+                if (conexaoProduto.existsByCodProduto(codProduto)) {
                     LOGGER.info("Produto: {}", codProduto + " já existe");
 
-                } else if (!iProdutoRepository.existsByCodProduto(dados[6])) {
+                } else if (!conexaoProduto.existsByCodProduto(codProduto)) {
+                    LOGGER.info("Produto: {}", codProduto + " Salvando");
 
                     produto.setCodProduto((codProduto));
                     produto.setNome(nomeProduto);
@@ -144,13 +144,13 @@ public class CsvProduto {
                 e.printStackTrace();
             }
         }
-        return iProdutoRepository.saveAll(resultadoLeitura);
+        return conexaoProduto.saveAll(resultadoLeitura);
 
     }
 
     public void importFromCsvProduto(MultipartFile file) throws Exception {
         List<Produto> produtos = this.csvToProduto(file);
-        produtoService.saveAll(produtos);
+        conexaoProduto.saveAll(produtos);
     }
 
     public void csvToProdutoFornecedor(Long id, MultipartFile file) throws Exception {
@@ -192,7 +192,7 @@ public class CsvProduto {
 
                 if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
                     if (!conexaoCategoria.existsByCodigoCategoria(codigocategoria)) {
-        
+
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
                         categoria.setFornecedor(conexaoFornecedor.findByFornecedorId(id));
@@ -236,9 +236,9 @@ public class CsvProduto {
                             conexaoLinhaCategoria.save(linhaExistente);
                         }
                     }
-                    if (iProdutoRepository.existsByCodProduto(codProduto)) {
-                        produto = produtoService.findByCodProduto(codProduto);
-                        Optional<Produto> produtoOptional = this.iProdutoRepository.findByCodProduto(codProduto);
+                    if (conexaoProduto.existsByCodProduto(codProduto)) {
+                        produto = conexaoProduto.findByCodProduto(codProduto);
+                        Optional<Produto> produtoOptional = this.conexaoProduto.findByCodProdutoOptional(codProduto);
                         LOGGER.info("Atualizando produto... id:[{}]", produto.getId());
                         LOGGER.debug("Payload: {}", produto);
                         LOGGER.debug("produto Existente:{}", produto);
@@ -254,9 +254,9 @@ public class CsvProduto {
                             produtoExistente.setUnidadeMedida(unimedida);
                             produtoExistente.setValidade(datavalidade);
                             produtoExistente.setLinhaCategoria(conexaoLinhaCategoria.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
-                            iProdutoRepository.save(produtoExistente);
+                            conexaoProduto.save(produtoExistente);
                         }
-                    } else if (!iProdutoRepository.existsByCodProduto(codProduto)) {
+                    } else if (!conexaoProduto.existsByCodProduto(codProduto)) {
 
                         produto.setCodProduto(codProduto);
                         produto.setNome(nomeProduto);
@@ -267,7 +267,7 @@ public class CsvProduto {
                         produto.setValidade(datavalidade);
                         produto.setLinhaCategoria(conexaoLinhaCategoria.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
 
-                        iProdutoRepository.save(produto);
+                        conexaoProduto.save(produto);
                     } else {
                         LOGGER.info("Produto {} Pretence a outro Fornecedor", produto.getId());
                     }

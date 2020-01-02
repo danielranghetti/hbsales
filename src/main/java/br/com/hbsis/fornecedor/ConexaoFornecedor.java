@@ -52,10 +52,7 @@ public class ConexaoFornecedor {
         return fornecedor;
     }
 
-
-
-
-    public void delete(Long id){
+    public void deletePorId(Long id){
         this.iFornecedorRepository.deleteById(id);
     }
 

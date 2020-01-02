@@ -118,7 +118,7 @@ public class CategoriaService {
     public void delete(Long id) {
         LOGGER.info("Executando delete para categoria de ID: [{}]", id);
 
-        this.conexaoCategoria.delete(id);
+        this.conexaoCategoria.deletePorId(id);
     }
 
 
