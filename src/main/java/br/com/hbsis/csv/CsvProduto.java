@@ -184,20 +184,16 @@ public class CsvProduto {
                 int uniCaixa = Integer.parseInt(resultado[3]);
                 double peso = Double.parseDouble(resultado[4].replaceAll("[A-Za-z]", ""));
                 String unimedida = resultado[4].replaceAll("[0-9.]", "");
-
                 String data = resultado[5];
                 int dia = Integer.parseInt(data.substring(0, 2));
                 int mes = Integer.parseInt(data.substring(3, 5));
                 int ano = Integer.parseInt(data.substring(6, 10));
                 LocalDate datavalidade = LocalDate.of(ano, mes, dia);
-
                 String codLinhaCategoria = resultado[6];
                 String nomeLinha = resultado[7];
                 String codigocategoria = resultado[8];
                 String nomeCategoria = resultado[9];
                 String cnpj = resultado[10].replaceAll("[^0-9]","");
-
-
 
                 if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
                     if (!iCategoriaRepository.existsByCodigoCategoria(codigocategoria)) {
