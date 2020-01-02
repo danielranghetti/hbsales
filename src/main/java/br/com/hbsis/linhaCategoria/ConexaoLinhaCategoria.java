@@ -60,7 +60,7 @@ public class ConexaoLinhaCategoria {
         throw  new IllegalArgumentException(String.format("ID %s não existe",id));
     }
 
-    public void delete(Long id) {
+    public void deletePorId(Long id) {
         this.iLinhaCategoriaRepository.deleteById(id);
     }
 

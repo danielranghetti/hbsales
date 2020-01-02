@@ -19,10 +19,11 @@ public class FuncionarioService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FuncionarioService.class);
 
-    private final IFuncionarioRepository iFuncionarioRepository;
+    private final ConexaoFuncionario conexaoFuncionario;
 
-    public FuncionarioService(IFuncionarioRepository iFuncionarioRepository) {
-        this.iFuncionarioRepository = iFuncionarioRepository;
+    public FuncionarioService(ConexaoFuncionario conexaoFuncionario) {
+        this.conexaoFuncionario = conexaoFuncionario;
+
     }
 
     public  FuncionarioDTO save(FuncionarioDTO funcionarioDTO){
@@ -39,7 +40,7 @@ public class FuncionarioService {
         funcionario.setNome(funcionarioDTO.getNome());
         funcionario.setUuid(UUID.randomUUID().toString());
 
-        funcionario = this.iFuncionarioRepository.save(funcionario);
+        funcionario = this.conexaoFuncionario.save(funcionario);
         return funcionarioDTO.of(funcionario);
     }
 
@@ -62,7 +63,7 @@ public class FuncionarioService {
         }
     }
     public  FuncionarioDTO findById(Long id){
-        Optional<Funcionario>funcionarioOptional = this.iFuncionarioRepository.findById(id);
+        Optional<Funcionario>funcionarioOptional = this.conexaoFuncionario.findById(id);
 
         if (funcionarioOptional.isPresent()){
             return  FuncionarioDTO.of(funcionarioOptional.get());
@@ -71,7 +72,7 @@ public class FuncionarioService {
     }
 
     public Funcionario findByFuncionarioId(Long id) {
-        Optional<Funcionario> funcionarioOptional = this.iFuncionarioRepository.findById(id);
+        Optional<Funcionario> funcionarioOptional = this.conexaoFuncionario.findById(id);
 
         if (funcionarioOptional.isPresent()) {
             return funcionarioOptional.get();
@@ -82,7 +83,7 @@ public class FuncionarioService {
 
     public FuncionarioDTO update(FuncionarioDTO funcionarioDTO, Long id){
 
-        Optional<Funcionario> funcionarioExistenteOptional = this.iFuncionarioRepository.findById(id);
+        Optional<Funcionario> funcionarioExistenteOptional = this.conexaoFuncionario.findById(id);
 
         if (funcionarioExistenteOptional.isPresent()){
             Funcionario funcionarioExistente = funcionarioExistenteOptional.get();
@@ -93,14 +94,14 @@ public class FuncionarioService {
             funcionarioExistente.setNome(funcionarioDTO.getNome());
             funcionarioExistente.seteMail(funcionarioDTO.geteMail());
 
-            funcionarioExistente = this.iFuncionarioRepository.save(funcionarioExistente);
+            funcionarioExistente = this.conexaoFuncionario.save(funcionarioExistente);
             return FuncionarioDTO.of(funcionarioExistente);
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
     public  void delete(Long id){
         LOGGER.info("Executenado o delete para funcionário de ID: [{}]", id);
-        this.iFuncionarioRepository.deleteById(id);
+        this.conexaoFuncionario.deletePorId(id);
     }
     private void hbEmployeeValidarFuncionario(FuncionarioDTO funcionarioDTO){
         RestTemplate restTemplate = new RestTemplate();
