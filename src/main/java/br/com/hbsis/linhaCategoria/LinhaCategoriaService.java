@@ -87,7 +87,7 @@ public class LinhaCategoriaService {
 
     public void delete(Long id) {
         LOGGER.info("Executando delete para linha de categoria de ID:[{}]", id);
-        this.conexaoLinhaCategoria.delete(id);
+        this.conexaoLinhaCategoria.deletePorId(id);
 
     }
 

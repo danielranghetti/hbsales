@@ -1,6 +1,7 @@
 package br.com.hbsis.itens;
 
 import br.com.hbsis.pedido.PedidoService;
+import br.com.hbsis.produto.ConexaoProduto;
 import br.com.hbsis.produto.ProdutoService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -14,13 +15,13 @@ import java.util.Optional;
 public class ItemService {
     private   final Logger LOGGER = LoggerFactory.getLogger(ItemService.class);
     private final IItemRepository iItemRepository;
-    private final ProdutoService produtoService;
+   private final ConexaoProduto conexaoProduto;
     private final PedidoService pedidoService;
 
     @Autowired
-    public ItemService(IItemRepository iItemRepository, ProdutoService produtoService, PedidoService pedidoService) {
+    public ItemService(IItemRepository iItemRepository, ConexaoProduto conexaoProduto, PedidoService pedidoService) {
         this.iItemRepository = iItemRepository;
-        this.produtoService = produtoService;
+        this.conexaoProduto = conexaoProduto;
         this.pedidoService = pedidoService;
     }
     private void validate(ItemDTO itemDTO){
@@ -48,7 +49,7 @@ public class ItemService {
         Item item = new Item();
 
         item.setQuantidade(itemDTO.getQuantidade());
-        item.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
+        item.setProduto(conexaoProduto.findByProdutoId(itemDTO.getProduto()));
         item.setPedido(pedidoService.findByPedidoId(itemDTO.getPedido()));
 
         item = this.iItemRepository.save(item);
@@ -73,7 +74,7 @@ public class ItemService {
             LOGGER.debug("Funcionário existente: {}", itemExistente);
 
             itemExistente.setQuantidade(itemDTO.getQuantidade());
-            itemExistente.setProduto(produtoService.findByProdutoId(itemDTO.getProduto()));
+            itemExistente.setProduto(conexaoProduto.findByProdutoId(itemDTO.getProduto()));
             itemExistente.setPedido(pedidoService.findByPedidoId(itemDTO.getPedido()));
 
             itemExistente = this.iItemRepository.save(itemExistente);

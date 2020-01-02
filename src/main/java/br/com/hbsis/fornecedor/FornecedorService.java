@@ -137,7 +137,7 @@ import java.util.Optional;
     public void delete(Long id) {
         LOGGER.info("Executando delete para fornecedor de ID: [{}]", id);
 
-        this.conexaoFornecedor.delete(id);
+        this.conexaoFornecedor.deletePorId(id);
     }
 
 
