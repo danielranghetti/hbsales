@@ -2,9 +2,8 @@ package br.com.hbsis.csv;
 
 import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.ConexaoCategoria;
-import br.com.hbsis.linhaCategoria.ILinhaCategoriaRepository;
+import br.com.hbsis.linhaCategoria.ConexaoLinhaCategoria;
 import br.com.hbsis.linhaCategoria.LinhaCategoria;
-import br.com.hbsis.linhaCategoria.LinhaCategoriaService;
 import com.opencsv.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,14 +22,13 @@ import java.util.List;
 public class CsvLinhaCategoria {
     private static final Logger LOGGER = LoggerFactory.getLogger(CsvLinhaCategoria.class);
 
-     private final LinhaCategoriaService linhaCategoriaService;
-     private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
-     private final ConexaoCategoria conexaoCategoria;
 
-     @Autowired
-    public CsvLinhaCategoria(LinhaCategoriaService linhaCategoriaService, ILinhaCategoriaRepository iLinhaCategoriaRepository, ConexaoCategoria conexaoCategoria) {
-        this.linhaCategoriaService = linhaCategoriaService;
-        this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
+    private final ConexaoLinhaCategoria conexaoLinhaCategoria;
+    private final ConexaoCategoria conexaoCategoria;
+
+    @Autowired
+    public CsvLinhaCategoria(ConexaoLinhaCategoria conexaoLinhaCategoria, ConexaoCategoria conexaoCategoria) {
+        this.conexaoLinhaCategoria = conexaoLinhaCategoria;
         this.conexaoCategoria = conexaoCategoria;
 
     }
@@ -48,13 +46,14 @@ public class CsvLinhaCategoria {
         String[] headerCSV = {"codigo", "nome", "codigo_categoria", "nome_categoria"};
         icsvWriter.writeNext(headerCSV);
 
-        for (LinhaCategoria linha : iLinhaCategoriaRepository.findAll()) {
+        for (LinhaCategoria linha : conexaoLinhaCategoria.findAll()) {
             icsvWriter.writeNext(new String[]{linha.getCodLinhaCategoria(), linha.getNomeLinha(), linha.getCategoria().getCodigoCategoria(), linha.getCategoria().getNomeCategoria()}
             );
         }
 
 
     }
+
     private List<LinhaCategoria> csvToLinhaCategoria(MultipartFile multipartFile) throws Exception {
         InputStreamReader inputStreamReader = new InputStreamReader(multipartFile.getInputStream());
 
@@ -71,42 +70,37 @@ public class CsvLinhaCategoria {
                 String[] resultado = lista[0].replaceAll("\"", "").split(";");
 
                 LinhaCategoria linhaCategoria = new LinhaCategoria();
-                Categoria categoria = new Categoria();
+                Categoria categoria;
 
                 String codLinhacat = resultado[0];
                 String nomeLinha = resultado[1];
                 String codCategoria = resultado[2];
 
-                if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhacat)) {
-                    LOGGER.info("Linha categoria: {}", codLinhacat + " já existe");
-                }
+                if (conexaoCategoria.existsByCodigoCategoria(codCategoria)) {
 
-                else if (conexaoCategoria.existsByCodigoCategoria(codCategoria)) {
+                    if (conexaoLinhaCategoria.existsByCodLinhaCategoria(codLinhacat)) {
+                        LOGGER.info("Linha categoria: {}", codLinhacat + " já existe");
 
-                    linhaCategoria.setCodLinhaCategoria(codLinhacat);
-                    linhaCategoria.setNomeLinha(nomeLinha);
-                    categoria = conexaoCategoria.findByCodigoCategoria1(codCategoria);
+                    } else if (!conexaoLinhaCategoria.existsByCodLinhaCategoria(codLinhacat)) {
+                        LOGGER.info("Linha categoria: {}", codLinhacat + " salvando");
+                        linhaCategoria.setCodLinhaCategoria(codLinhacat);
+                        linhaCategoria.setNomeLinha(nomeLinha);
+                        categoria = conexaoCategoria.findByCodigoCategoria1(codCategoria);
+                        linhaCategoria.setCategoria(categoria);
+                        leitura.add(linhaCategoria);
 
-                    linhaCategoria.setCategoria(categoria);
-                    leitura.add(linhaCategoria);
-                }
-
-                else if (!iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhacat)){
-                    LOGGER.info("Linha categoria: {}", codLinhacat + " salvando");
-                    linhaCategoria.setCategoria(categoria);
-                    leitura.add(linhaCategoria);
-
-
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
         }
-        return iLinhaCategoriaRepository.saveAll(leitura);
+        return conexaoLinhaCategoria.saveAll(leitura);
     }
+
     public void importFromCsvlinhaCategoria(MultipartFile file) throws Exception {
         List<LinhaCategoria> linhaCategorias = this.csvToLinhaCategoria(file);
-        linhaCategoriaService.saveAll(linhaCategorias);
+        conexaoLinhaCategoria.saveAll(linhaCategorias);
     }
 }

@@ -1,6 +1,6 @@
 package br.com.hbsis.produto;
 
-import br.com.hbsis.linhaCategoria.LinhaCategoriaService;
+import br.com.hbsis.linhaCategoria.ConexaoLinhaCategoria;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,13 +15,14 @@ public class ProdutoService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProdutoService.class);
     private final IProdutoRepository iProdutoRepository;
-    private final LinhaCategoriaService linhaCategoriaService;
+    private final ConexaoLinhaCategoria conexaoLinhaCategoria;
 
 
 
-    public ProdutoService(IProdutoRepository iProdutoRepository, LinhaCategoriaService linhaCategoriaService) {
+    public ProdutoService(IProdutoRepository iProdutoRepository, ConexaoLinhaCategoria conexaoLinhaCategoria) {
         this.iProdutoRepository = iProdutoRepository;
-        this.linhaCategoriaService = linhaCategoriaService;
+        this.conexaoLinhaCategoria = conexaoLinhaCategoria;
+
     }
 
     public List<Produto> saveAll(List<Produto> produto) throws Exception {
@@ -47,7 +48,7 @@ public class ProdutoService {
         produto.setPesoUni(produtoDTO.getPesoUni());
         produto.setValidade(produtoDTO.getValidade());
         produto.setUnidadeMedida(produtoDTO.getUnidadeMedida());
-        produto.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaId(produtoDTO.getLinhaCategoria()));
+        produto.setLinhaCategoria(conexaoLinhaCategoria.findByLinhaCategoriaId(produtoDTO.getLinhaCategoria()));
 
         produto = this.iProdutoRepository.save(produto);
         return ProdutoDTO.of(produto);
@@ -61,7 +62,7 @@ public class ProdutoService {
     public ProdutoDTO finById(Long id) {
         Optional<Produto> produtoOptional = this.iProdutoRepository.findById(id);
 
-        if (((Optional) produtoOptional).isPresent()) {
+        if (produtoOptional.isPresent()) {
             return ProdutoDTO.of(produtoOptional.get());
         }
         throw new IllegalArgumentException(String.format("esse  %s não existe", id));
@@ -110,7 +111,7 @@ public class ProdutoService {
             produtoExistente.setUniCaixa(produtoDTO.getUniCaixa());
             produtoExistente.setPesoUni(produtoDTO.getPesoUni());
             produtoExistente.setValidade(produtoDTO.getValidade());
-            produtoExistente.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaId(produtoDTO.getLinhaCategoria()));
+            produtoExistente.setLinhaCategoria(conexaoLinhaCategoria.findByLinhaCategoriaId(produtoDTO.getLinhaCategoria()));
 
 
             produtoExistente = iProdutoRepository.save(produtoExistente);
