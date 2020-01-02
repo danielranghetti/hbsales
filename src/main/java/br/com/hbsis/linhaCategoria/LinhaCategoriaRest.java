@@ -49,7 +49,7 @@ public class LinhaCategoriaRest {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") Long id) {
-        LOGGER.info("Recebendo Delete para Usuário de ID: {}", id);
+        LOGGER.info("Recebendo Delete para linha de categoria de ID: {}", id);
 
         this.linhaCategoriaService.delete(id);
     }

@@ -4,9 +4,8 @@ import br.com.hbsis.categoria.Categoria;
 import br.com.hbsis.categoria.ConexaoCategoria;
 import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.fornecedor.ConexaoFornecedor;
-import br.com.hbsis.linhaCategoria.ILinhaCategoriaRepository;
+import br.com.hbsis.linhaCategoria.ConexaoLinhaCategoria;
 import br.com.hbsis.linhaCategoria.LinhaCategoria;
-import br.com.hbsis.linhaCategoria.LinhaCategoriaService;
 import br.com.hbsis.produto.IProdutoRepository;
 import br.com.hbsis.produto.Produto;
 import br.com.hbsis.produto.ProdutoService;
@@ -31,18 +30,16 @@ import java.util.Optional;
 public class CsvProduto {
     private static final Logger LOGGER = LoggerFactory.getLogger(Produto.class);
     private final IProdutoRepository iProdutoRepository;
-    private final LinhaCategoriaService linhaCategoriaService;
-    private final ILinhaCategoriaRepository iLinhaCategoriaRepository;
+    private final ConexaoLinhaCategoria conexaoLinhaCategoria;
     private final ConexaoFornecedor conexaoFornecedor;
     private final ConexaoCategoria conexaoCategoria;
     private final ProdutoService produtoService;
 
 
     @Autowired
-    public CsvProduto(IProdutoRepository iProdutoRepository, LinhaCategoriaService linhaCategoriaService, ILinhaCategoriaRepository iLinhaCategoriaRepository, ConexaoFornecedor conexaoFornecedor, ConexaoCategoria conexaoCategoria, ProdutoService produtoService) {
+    public CsvProduto(IProdutoRepository iProdutoRepository, ConexaoLinhaCategoria conexaoLinhaCategoria, ConexaoFornecedor conexaoFornecedor, ConexaoCategoria conexaoCategoria, ProdutoService produtoService) {
         this.iProdutoRepository = iProdutoRepository;
-        this.linhaCategoriaService = linhaCategoriaService;
-        this.iLinhaCategoriaRepository = iLinhaCategoriaRepository;
+        this.conexaoLinhaCategoria = conexaoLinhaCategoria;
         this.conexaoFornecedor = conexaoFornecedor;
         this.conexaoCategoria = conexaoCategoria;
         this.produtoService = produtoService;
@@ -136,7 +133,7 @@ public class CsvProduto {
                     produto.setPesoUni(pesoUni);
                     produto.setUnidadeMedida(unidadeMedida);
                     produto.setValidade(datavalidade);
-                    linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
+                    linhaCategoria = conexaoLinhaCategoria.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
                     produto.setLinhaCategoria(linhaCategoria);
                     resultadoLeitura.add(produto);
 
@@ -193,8 +190,6 @@ public class CsvProduto {
                 String cnpj = resultado[10].replaceAll("[^0-9]","");
 
 
-
-
                 if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
                     if (!conexaoCategoria.existsByCodigoCategoria(codigocategoria)) {
         
@@ -220,15 +215,15 @@ public class CsvProduto {
                             conexaoCategoria.save(categoriaExistente);
                         }
                     }
-                    if (!(iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria))) {
+                    if (!(conexaoLinhaCategoria.existsByCodLinhaCategoria(codLinhaCategoria))) {
                         linhaCategoria.setCodLinhaCategoria(codLinhaCategoria);
                         linhaCategoria.setNomeLinha(nomeLinha);
                         linhaCategoria.setCategoria(conexaoCategoria.findByCodigoCategoria1(codigocategoria));
-                        iLinhaCategoriaRepository.save(linhaCategoria);
+                        conexaoLinhaCategoria.save(linhaCategoria);
 
-                    } else if (iLinhaCategoriaRepository.existsByCodLinhaCategoria(codLinhaCategoria)) {
-                        linhaCategoria = linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
-                        Optional<LinhaCategoria> linhaCategoriaOptional = this.iLinhaCategoriaRepository.findByCodLinhaCategoria(codLinhaCategoria);
+                    } else if (conexaoLinhaCategoria.existsByCodLinhaCategoria(codLinhaCategoria)) {
+                        linhaCategoria = conexaoLinhaCategoria.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria);
+                        Optional<LinhaCategoria> linhaCategoriaOptional = this.conexaoLinhaCategoria.findByCodLinhaCategoria(codLinhaCategoria);
                         LOGGER.info("Alterando linha... id:{}", linhaCategoria.getId());
                         LOGGER.debug("Payload: {}", linhaCategoria);
                         LOGGER.debug("Linha Categoria Existente: {}", linhaCategoria);
@@ -238,7 +233,7 @@ public class CsvProduto {
                             linhaExistente.setCodLinhaCategoria(codLinhaCategoria);
                             linhaExistente.setNomeLinha(nomeLinha);
                             linhaCategoria.setCategoria(conexaoCategoria.findByCodigoCategoria1(codigocategoria));
-                            iLinhaCategoriaRepository.save(linhaExistente);
+                            conexaoLinhaCategoria.save(linhaExistente);
                         }
                     }
                     if (iProdutoRepository.existsByCodProduto(codProduto)) {
@@ -258,7 +253,7 @@ public class CsvProduto {
                             produtoExistente.setPesoUni(peso);
                             produtoExistente.setUnidadeMedida(unimedida);
                             produtoExistente.setValidade(datavalidade);
-                            produtoExistente.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
+                            produtoExistente.setLinhaCategoria(conexaoLinhaCategoria.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
                             iProdutoRepository.save(produtoExistente);
                         }
                     } else if (!iProdutoRepository.existsByCodProduto(codProduto)) {
@@ -270,7 +265,7 @@ public class CsvProduto {
                         produto.setPesoUni(peso);
                         produto.setUnidadeMedida(unimedida);
                         produto.setValidade(datavalidade);
-                        produto.setLinhaCategoria(linhaCategoriaService.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
+                        produto.setLinhaCategoria(conexaoLinhaCategoria.findByLinhaCategoriaCodLinhaCategoria(codLinhaCategoria));
 
                         iProdutoRepository.save(produto);
                     } else {
