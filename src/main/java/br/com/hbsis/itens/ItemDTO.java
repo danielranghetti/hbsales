@@ -7,7 +7,6 @@ public class ItemDTO {
     private int quantidade;
 
 
-
     public ItemDTO() {
     }
 
@@ -17,11 +16,12 @@ public class ItemDTO {
         this.pedido = pedido;
         this.quantidade = quantidade;
     }
-    public static  ItemDTO of(Item item){
+
+    public static ItemDTO of(Item item) {
         return new ItemDTO(
-          item.getId(),
-          item.getPedido().getId(),
+                item.getId(),
                 item.getProduto().getId(),
+                item.getPedido().getId(),
                 item.getQuantidade()
         );
     }

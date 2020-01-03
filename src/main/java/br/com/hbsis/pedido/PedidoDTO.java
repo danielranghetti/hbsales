@@ -2,9 +2,11 @@ package br.com.hbsis.pedido;
 
 
 
+import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PedidoDTO {
@@ -17,25 +19,28 @@ public class PedidoDTO {
     private String codPedido;
     private List<ItemDTO> itemDTOList;
 
-    public PedidoDTO(Long id, Long funcionario, Long periodoVenda, LocalDate date, String status, String codPedido ) {
+    public PedidoDTO(Long id, Long funcionario, Long periodoVenda, LocalDate date, String status, String codPedido, List<ItemDTO> itemDTOList) {
         this.id = id;
         this.funcionario = funcionario;
         this.periodoVenda = periodoVenda;
         this.date = date;
         this.status = status;
         this.codPedido = codPedido;
-
-
-
+        this.itemDTOList = itemDTOList;
     }
+
     public static PedidoDTO of(Pedido pedido) {
+        List<ItemDTO> itemDTOList = new ArrayList<>();
+        pedido.getItemList().forEach(item -> itemDTOList.add(ItemDTO.of(item)));
+
         return new PedidoDTO(
                 pedido.getId(),
                 pedido.getFuncionario().getId(),
                 pedido.getPeriodoVenda().getId(),
                 pedido.getData(),
                 pedido.getStatus(),
-                pedido.getCodPedido()
+                pedido.getCodPedido(),
+                itemDTOList
         );
     }
 
