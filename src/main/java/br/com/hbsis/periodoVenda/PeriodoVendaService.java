@@ -6,7 +6,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -15,11 +14,12 @@ public class PeriodoVendaService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PeriodoVendaService.class);
 
-    private final IPeriodoVendaRepository iPeriodoVendaRepository;
+    private final ConexaoPeriodoVenda conexaoPeriodoVenda;
    private final ConexaoFornecedor conexaoFornecedor;
 
-    public PeriodoVendaService(IPeriodoVendaRepository iPeriodoVendaRepository,ConexaoFornecedor conexaoFornecedor) {
-        this.iPeriodoVendaRepository = iPeriodoVendaRepository;
+
+    public PeriodoVendaService(ConexaoPeriodoVenda conexaoPeriodoVenda, ConexaoFornecedor conexaoFornecedor) {
+        this.conexaoPeriodoVenda = conexaoPeriodoVenda;
         this.conexaoFornecedor = conexaoFornecedor;
     }
 
@@ -39,7 +39,7 @@ public class PeriodoVendaService {
         periodoVenda.setDescricao(periodoVendaDTO.getDescricao());
         periodoVenda.setFornecedor(conexaoFornecedor.findByFornecedorId(periodoVendaDTO.getFornecedor()));
 
-        periodoVenda = this.iPeriodoVendaRepository.save(periodoVenda);
+        periodoVenda = this.conexaoPeriodoVenda.save(periodoVenda);
         return PeriodoVendaDTO.of(periodoVenda);
     }
 
@@ -67,7 +67,7 @@ public class PeriodoVendaService {
         if (periodoVendaDTO.getDataInicio().isBefore(LocalDate.now()) || periodoVendaDTO.getDataFinal().isBefore(LocalDate.now()) || periodoVendaDTO.getDataRetirada().isBefore(LocalDate.now())){
             throw new  IllegalArgumentException("As datas não podem ser inferior a de hoje");
         }
-        if (iPeriodoVendaRepository.existDateAberta(periodoVendaDTO.getDataInicio(), periodoVendaDTO.getFornecedor()) >=1){
+        if (conexaoPeriodoVenda.dataExistente(periodoVendaDTO.getDataInicio(), periodoVendaDTO.getFornecedor())){
             throw new  IllegalArgumentException("O fornecedor não pode ter dois periodos de venda ao mesmo tempo");
         }
         if (periodoVendaDTO.getDataFinal().isBefore(periodoVendaDTO.getDataInicio()))  {
@@ -79,10 +79,8 @@ public class PeriodoVendaService {
 
 
     }
-
-
     public PeriodoVendaDTO findById(Long id) {
-        Optional<PeriodoVenda> periodoVendaOptional = this.iPeriodoVendaRepository.findById(id);
+        Optional<PeriodoVenda> periodoVendaOptional = this.conexaoPeriodoVenda.findById(id);
 
         if (periodoVendaOptional.isPresent()) {
             return PeriodoVendaDTO.of(periodoVendaOptional.get());
@@ -90,19 +88,11 @@ public class PeriodoVendaService {
 
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
-    public PeriodoVenda findByPeriodoVendaId(Long id) {
-        Optional<PeriodoVenda> periodoVendaOptional = this.iPeriodoVendaRepository.findById(id);
 
-        if (periodoVendaOptional.isPresent()) {
-            return periodoVendaOptional.get();
-        }
-
-        throw new IllegalArgumentException(String.format("ID %s não existe", id));
-    }
 
 
     public PeriodoVendaDTO update(PeriodoVendaDTO periodoVendaDTO, Long id) {
-        Optional<PeriodoVenda> periodoVendaExistenteOptional = this.iPeriodoVendaRepository.findById(id);
+        Optional<PeriodoVenda> periodoVendaExistenteOptional = this.conexaoPeriodoVenda.findById(id);
 
         if (periodoVendaExistenteOptional.isPresent()) {
             PeriodoVenda periodoVendaExistente = periodoVendaExistenteOptional.get();
@@ -117,7 +107,7 @@ public class PeriodoVendaService {
             periodoVendaExistente.setDataRetirada(periodoVendaDTO.getDataRetirada());
             periodoVendaExistente.setFornecedor(conexaoFornecedor.findByFornecedorId(periodoVendaDTO.getFornecedor()));
 
-            periodoVendaExistente = this.iPeriodoVendaRepository.save(periodoVendaExistente);
+            periodoVendaExistente = this.conexaoPeriodoVenda.save(periodoVendaExistente);
             return PeriodoVendaDTO.of(periodoVendaExistente);
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
@@ -127,7 +117,7 @@ public class PeriodoVendaService {
     public void delete(Long id) {
         LOGGER.info("Executando delete para o  periodo de venda: {}", id);
 
-        this.iPeriodoVendaRepository.deleteById(id);
+        this.conexaoPeriodoVenda.deletePorId(id);
     }
 
 

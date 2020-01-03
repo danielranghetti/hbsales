@@ -9,7 +9,7 @@ import java.util.List;
 
 
 @Repository
-public interface IPedidoRepository extends JpaRepository<Pedido, Long> {
+interface IPedidoRepository extends JpaRepository<Pedido, Long> {
     List<Pedido> findByPeriodoVenda(PeriodoVenda periodoVenda);
     List<Pedido> findByFuncionario(Funcionario funcionario);
     

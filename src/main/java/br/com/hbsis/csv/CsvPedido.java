@@ -3,12 +3,12 @@ package br.com.hbsis.csv;
 import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
-import br.com.hbsis.itens.IItemRepository;
+import br.com.hbsis.itens.ConexaoItem;
 import br.com.hbsis.itens.Item;
-import br.com.hbsis.pedido.IPedidoRepository;
+import br.com.hbsis.pedido.ConexaoPedido;
 import br.com.hbsis.pedido.Pedido;
+import br.com.hbsis.periodoVenda.ConexaoPeriodoVenda;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
-import br.com.hbsis.periodoVenda.PeriodoVendaService;
 import com.opencsv.CSVWriter;
 import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVWriter;
@@ -22,19 +22,21 @@ import java.util.List;
 
 @Service
 public class CsvPedido {
-    private final IPedidoRepository iPedidoRepository;
-    private final PeriodoVendaService periodoVendaService;
+    private final ConexaoPedido conexaoPedido;
+    private final ConexaoPeriodoVenda conexaoPeriodoVenda;
     private final FuncionarioService funcionarioService;
     private final MascaraCnpj mascaraCnpj;
-    private final IItemRepository iItemRepository;
+    private final ConexaoItem conexaoItem;
 
     @Autowired
-    public CsvPedido(IPedidoRepository iPedidoRepository, PeriodoVendaService periodoVendaService, FuncionarioService funcionarioService, MascaraCnpj mascaraCnpj, IItemRepository iItemRepository) {
-        this.iPedidoRepository = iPedidoRepository;
-        this.periodoVendaService = periodoVendaService;
+    public CsvPedido(ConexaoPedido conexaoPedido, ConexaoPeriodoVenda conexaoPeriodoVenda, FuncionarioService funcionarioService,
+                     MascaraCnpj mascaraCnpj, ConexaoItem conexaoItem) {
+        this.conexaoPedido = conexaoPedido;
+        this.conexaoPeriodoVenda = conexaoPeriodoVenda;
         this.funcionarioService = funcionarioService;
         this.mascaraCnpj = mascaraCnpj;
-        this.iItemRepository = iItemRepository;
+        this.conexaoItem = conexaoItem;
+
     }
 
     public void csvPedidoPeriodoVendasExport(HttpServletResponse response, Long id) throws Exception {
@@ -49,14 +51,14 @@ public class CsvPedido {
         String[] escreveCsv = {"Nome do Produto", "Quantidade", "fornecedor"};
         icsvWriter.writeNext(escreveCsv);
         PeriodoVenda periodoVendas;
-        periodoVendas = periodoVendaService.findByPeriodoVendaId(id);
+        periodoVendas = conexaoPeriodoVenda.findByPeriodoVendaId(id);
         List<Item> itemList;
         List<Pedido> pedidos;
 
-        pedidos = iPedidoRepository.findByPeriodoVenda(periodoVendas);
+        pedidos = conexaoPedido.findByPeriodoVenda(periodoVendas);
 
         for (Pedido pedido : pedidos) {
-            itemList = iItemRepository.findByPedido(pedido);
+            itemList = conexaoItem.findByPedido(pedido);
             for (Item item: itemList)
             icsvWriter.writeNext(new String[]{item.getProduto().getNome(), String.valueOf(item.getQuantidade()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "---" + mascaraCnpj.formatCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
         }
@@ -78,9 +80,9 @@ public class CsvPedido {
         List<Item> items;
         List<Pedido> pedidos;
 
-        pedidos = iPedidoRepository.findByFuncionario(funcionario);
+        pedidos = conexaoPedido.findByFuncionario(funcionario);
         for (Pedido pedido : pedidos) {
-            items = iItemRepository.findByPedido(pedido);
+            items = conexaoItem.findByPedido(pedido);
             for (Item item : items) {
                 icsvWriter.writeNext(new String[]{pedido.getFuncionario().getNome(), item.getProduto().getNome(), String.valueOf(item.getQuantidade()), pedido.getPeriodoVenda().getFornecedor().getRazaoSocial() + "--" + mascaraCnpj.formatCnpj(pedido.getPeriodoVenda().getFornecedor().getCnpj())});
             }

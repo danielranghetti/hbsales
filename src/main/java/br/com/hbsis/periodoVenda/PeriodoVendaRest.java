@@ -44,7 +44,7 @@ public class PeriodoVendaRest {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") Long id) {
-        LOGGER.info("Recebendo Delete para Usuário de ID: {}", id);
+        LOGGER.info("Recebendo Delete para periodo de venda de ID: {}", id);
 
         this.periodoVendaService.delete(id);
     }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 
 @Repository
-public interface IPeriodoVendaRepository extends JpaRepository<PeriodoVenda, Long> {
+interface IPeriodoVendaRepository extends JpaRepository<PeriodoVenda, Long> {
 
     @Query(value = "select count(1) from seg_periodo_venda where data_final >= :dataInicio and id_fornecedor = :fornecedor", nativeQuery = true)
     long existDateAberta(
