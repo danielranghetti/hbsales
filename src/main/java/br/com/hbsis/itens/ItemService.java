@@ -1,8 +1,8 @@
 package br.com.hbsis.itens;
 
+import br.com.hbsis.pedido.ConexaoPedido;
 import br.com.hbsis.pedido.PedidoService;
 import br.com.hbsis.produto.ConexaoProduto;
-import br.com.hbsis.produto.ProdutoService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,15 +14,16 @@ import java.util.Optional;
 @Service
 public class ItemService {
     private   final Logger LOGGER = LoggerFactory.getLogger(ItemService.class);
-    private final IItemRepository iItemRepository;
+    private final ConexaoItem conexaoItem;
    private final ConexaoProduto conexaoProduto;
-    private final PedidoService pedidoService;
+    private final ConexaoPedido conexaoPedido;
 
     @Autowired
-    public ItemService(IItemRepository iItemRepository, ConexaoProduto conexaoProduto, PedidoService pedidoService) {
-        this.iItemRepository = iItemRepository;
+    public ItemService(ConexaoItem conexaoItem, ConexaoProduto conexaoProduto, ConexaoPedido conexaoPedido) {
+        this.conexaoItem = conexaoItem;
         this.conexaoProduto = conexaoProduto;
-        this.pedidoService = pedidoService;
+        this.conexaoPedido = conexaoPedido;
+
     }
     private void validate(ItemDTO itemDTO){
         LOGGER.info("Validando Item");
@@ -50,14 +51,14 @@ public class ItemService {
 
         item.setQuantidade(itemDTO.getQuantidade());
         item.setProduto(conexaoProduto.findByProdutoId(itemDTO.getProduto()));
-        item.setPedido(pedidoService.findByPedidoId(itemDTO.getPedido()));
+        item.setPedido(conexaoPedido.findByPedidoId(itemDTO.getPedido()));
 
-        item = this.iItemRepository.save(item);
+        item = this.conexaoItem.save(item);
         return ItemDTO.of(item);
     }
 
     public  ItemDTO findById(Long id){
-        Optional<Item> itemOptional = this.iItemRepository.findById(id);
+        Optional<Item> itemOptional = this.conexaoItem.findById(id);
         if (itemOptional.isPresent()){
             return ItemDTO.of(itemOptional.get());
         }
@@ -65,7 +66,7 @@ public class ItemService {
     }
 
     public ItemDTO update(ItemDTO itemDTO, Long id){
-        Optional<Item> itemOptionalExistente = this.iItemRepository.findById(id);
+        Optional<Item> itemOptionalExistente = this.conexaoItem.findById(id);
         this.validate(itemDTO);
         if (itemOptionalExistente.isPresent()){
             Item itemExistente = itemOptionalExistente.get();
@@ -75,9 +76,9 @@ public class ItemService {
 
             itemExistente.setQuantidade(itemDTO.getQuantidade());
             itemExistente.setProduto(conexaoProduto.findByProdutoId(itemDTO.getProduto()));
-            itemExistente.setPedido(pedidoService.findByPedidoId(itemDTO.getPedido()));
+            itemExistente.setPedido(conexaoPedido.findByPedidoId(itemDTO.getPedido()));
 
-            itemExistente = this.iItemRepository.save(itemExistente);
+            itemExistente = this.conexaoItem.save(itemExistente);
             return ItemDTO.of(itemExistente);
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
@@ -85,6 +86,6 @@ public class ItemService {
 
     public  void delete(Long id){
         LOGGER.info("Executando o delete para item de ID:[{}]",id);
-        this.iItemRepository.deleteById(id);
+        this.conexaoItem.deletePorId(id);
     }
 }

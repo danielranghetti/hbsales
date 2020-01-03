@@ -63,8 +63,6 @@ public class ProdutoService {
 
     }
 
-
-
     public ProdutoDTO update(ProdutoDTO produtoDTO, Long id) {
         Optional<Produto> produtoExistenteOptional = this.conexaoProduto.findById(id);
 

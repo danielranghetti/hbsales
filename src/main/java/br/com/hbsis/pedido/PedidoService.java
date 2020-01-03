@@ -7,17 +7,18 @@ import br.com.hbsis.funcionario.FuncionarioService;
 import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.itens.ItemService;
-import br.com.hbsis.periodoVenda.PeriodoVendaService;
+import br.com.hbsis.periodoVenda.ConexaoPeriodoVenda;
 import br.com.hbsis.produto.ConexaoProduto;
 import br.com.hbsis.produto.Produto;
-import br.com.hbsis.produto.ProdutoService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,21 +31,22 @@ public class PedidoService {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidoService.class);
-    private final IPedidoRepository iPedidoRepository;
     private final FuncionarioService funcionarioService;
-    private final PeriodoVendaService periodoVendaService;
-    private final ItemService itemService;
+    private final ConexaoPeriodoVenda conexaoPeriodoVenda;
     private final ConexaoProduto conexaoProduto;
+    private final ConexaoPedido conexaoPedido;
+    private final ItemService itemService;
+
 
 
     private final Email email;
 
-    public PedidoService(IPedidoRepository iPedidoRepository, FuncionarioService funcionarioService, PeriodoVendaService periodoVendaService, @Lazy ItemService itemService, ConexaoProduto conexaoProduto, Email email) {
-        this.iPedidoRepository = iPedidoRepository;
+    public PedidoService(FuncionarioService funcionarioService, ConexaoPeriodoVenda conexaoPeriodoVenda, ConexaoProduto conexaoProduto, ConexaoPedido conexaoPedido, ItemService itemService, Email email) {
         this.funcionarioService = funcionarioService;
-        this.periodoVendaService = periodoVendaService;
-        this.itemService = itemService;
+        this.conexaoPeriodoVenda = conexaoPeriodoVenda;
+        this.conexaoPedido = conexaoPedido;
         this.conexaoProduto = conexaoProduto;
+        this.itemService = itemService;
         this.email = email;
     }
 
@@ -59,14 +61,14 @@ public class PedidoService {
         pedido.setData(pedidoDTO.getDate());
         pedido.setId(pedidoDTO.getId());
         pedido.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
-        pedido.setPeriodoVenda(periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
+        pedido.setPeriodoVenda(conexaoPeriodoVenda.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
         pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
 
 
 
         if (invoiceValidarPedido(pedido.getPeriodoVenda().getFornecedor().getCnpj(), pedido.getFuncionario().getUuid(), parserItem(pedidoDTO.getItemDTOList(), pedido), totalValue(pedidoDTO.getItemDTOList()))) {
 
-            pedido = this.iPedidoRepository.save(pedido);
+            pedido = this.conexaoPedido.save(pedido);
             pedido.setItemList(parserItem(pedidoDTO.getItemDTOList(),pedido));
 
 
@@ -90,11 +92,8 @@ public class PedidoService {
         return PedidoDTO.of(pedido);
     }
 
-
-
-
     public PedidoDTO findByid(Long id) {
-        Optional<Pedido> pedidoOptional = this.iPedidoRepository.findById(id);
+        Optional<Pedido> pedidoOptional = this.conexaoPedido.findById(id);
 
         if (pedidoOptional.isPresent()) {
             return PedidoDTO.of(pedidoOptional.get());
@@ -102,17 +101,8 @@ public class PedidoService {
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
-    public Pedido findByPedidoId(Long id) {
-        Optional<Pedido> pedidoOptional = this.iPedidoRepository.findById(id);
-
-        if (pedidoOptional.isPresent()) {
-            return pedidoOptional.get();
-        }
-        throw new IllegalArgumentException(String.format("ID %s não existe", id));
-    }
-
     public PedidoDTO update(PedidoDTO pedidoDTO, Long id) {
-        Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
+        Optional<Pedido> pedidoExistenteOptional = this.conexaoPedido.findById(id);
         this.validateUpdate(pedidoDTO, id);
 
         if (pedidoExistenteOptional.isPresent()) {
@@ -124,11 +114,11 @@ public class PedidoService {
 
             pedidoExistente.setData(LocalDate.now());
             pedidoExistente.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
-            pedidoExistente.setPeriodoVenda(periodoVendaService.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
+            pedidoExistente.setPeriodoVenda(conexaoPeriodoVenda.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
 
             pedidoExistente.setStatus(pedidoDTO.getStatus().toUpperCase());
 
-            pedidoExistente = this.iPedidoRepository.save(pedidoExistente);
+            pedidoExistente = this.conexaoPedido.save(pedidoExistente);
             return PedidoDTO.of(pedidoExistente);
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
@@ -136,7 +126,7 @@ public class PedidoService {
 
     public void delete(Long id) {
         LOGGER.info("Executando delete para linha de categoria de ID:[{}]", id);
-        this.iPedidoRepository.deleteById(id);
+        this.conexaoPedido.deletePorId(id);
     }
 
     private void validate(PedidoDTO pedidoDTO) {
@@ -145,7 +135,7 @@ public class PedidoService {
         pedidoDTO.setCodPedido(gerandoCod());
         pedidoDTO.setDate(LocalDate.now());
         pedidoDTO.setStatus("ATIVO");
-        while (iPedidoRepository.existsByCodPedido(pedidoDTO.getCodPedido())) {
+        while (conexaoPedido.existsByCodPedido(pedidoDTO.getCodPedido())) {
             LOGGER.info("codigo de pedido já existente gerando um novo");
             pedidoDTO.setCodPedido(gerandoCod());
         }
@@ -158,7 +148,7 @@ public class PedidoService {
         if (StringUtils.isEmpty(String.valueOf(pedidoDTO.getPeriodoVenda()))) {
             throw new IllegalArgumentException("Periodo de vendas não deve ser nulo");
         }
-        if (iPedidoRepository.existsByCodPedido(pedidoDTO.getCodPedido())) {
+        if (conexaoPedido.existsByCodPedido(pedidoDTO.getCodPedido())) {
             throw new IllegalArgumentException("O codigo do pedido já existe");
         }
         if (StringUtils.isEmpty(pedidoDTO.getStatus())) {
@@ -176,7 +166,7 @@ public class PedidoService {
     }
 
     private void validateCan(PedidoDTO pedidoDTO, Long id) {
-        Optional<Pedido> pedidoExistenteOptionalPedido = this.iPedidoRepository.findById(id);
+        Optional<Pedido> pedidoExistenteOptionalPedido = this.conexaoPedido.findById(id);
         pedidoDTO.setStatus("CANCELADO");
         pedidoDTO.setDate(LocalDate.now());
 
@@ -195,7 +185,7 @@ public class PedidoService {
     }
 
     private void validateUpdate(PedidoDTO pedidoDTO, Long id) {
-        Optional<Pedido> pedidoExistenteOptionalAltera = this.iPedidoRepository.findById(id);
+        Optional<Pedido> pedidoExistenteOptionalAltera = this.conexaoPedido.findById(id);
 
         if (pedidoExistenteOptionalAltera.isPresent()) {
             Pedido pedidoExistente = pedidoExistenteOptionalAltera.get();
@@ -214,7 +204,7 @@ public class PedidoService {
 
     private void validateRetira(PedidoDTO pedidoDTO, Long id) {
 
-        Optional<Pedido> pedidoExistenteOptionalRetira = this.iPedidoRepository.findById(id);
+        Optional<Pedido> pedidoExistenteOptionalRetira = this.conexaoPedido.findById(id);
         pedidoDTO.setStatus("RETIRADO");
         pedidoDTO.setDate(LocalDate.now());
         if (pedidoExistenteOptionalRetira.isPresent()) {
@@ -248,7 +238,7 @@ public class PedidoService {
         funcionario = funcionarioService.findByFuncionarioId(id);
 
         List<Pedido> pedidos;
-        pedidos = iPedidoRepository.findByFuncionario(funcionario);
+        pedidos = conexaoPedido.findByFuncionario(funcionario);
         List<PedidoDTO> pedidoDTOList = new ArrayList<>();
 
         for (Pedido pedido : pedidos) {
@@ -272,7 +262,7 @@ public class PedidoService {
     }
 
     public PedidoDTO updateCancelar(PedidoDTO pedidoDTO, Long id) {
-        Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
+        Optional<Pedido> pedidoExistenteOptional = this.conexaoPedido.findById(id);
         this.validateCan(pedidoDTO, id);
 
 
@@ -288,7 +278,7 @@ public class PedidoService {
             pedidoExistente.setData(pedidoDTO.getDate());
 
 
-            pedidoExistente = this.iPedidoRepository.save(pedidoExistente);
+            pedidoExistente = this.conexaoPedido.save(pedidoExistente);
             return PedidoDTO.of(pedidoExistente);
 
         }
@@ -296,7 +286,7 @@ public class PedidoService {
     }
 
     public PedidoDTO updateRetira(PedidoDTO pedidoDTO, Long id) {
-        Optional<Pedido> pedidoExistenteOptional = this.iPedidoRepository.findById(id);
+        Optional<Pedido> pedidoExistenteOptional = this.conexaoPedido.findById(id);
         this.validateRetira(pedidoDTO, id);
 
 
@@ -312,7 +302,7 @@ public class PedidoService {
             pedidoExistenteRetira.setData(pedidoDTO.getDate());
 
 
-            pedidoExistenteRetira = this.iPedidoRepository.save(pedidoExistenteRetira);
+            pedidoExistenteRetira = this.conexaoPedido.save(pedidoExistenteRetira);
             return PedidoDTO.of(pedidoExistenteRetira);
 
         }
