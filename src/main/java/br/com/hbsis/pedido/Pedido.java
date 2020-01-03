@@ -3,7 +3,6 @@ package br.com.hbsis.pedido;
 
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.itens.Item;
-import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.periodoVenda.PeriodoVenda;
 
 import javax.persistence.*;
@@ -33,7 +32,6 @@ public class Pedido {
 
     @OneToMany(mappedBy = "pedido")
     private List<Item> itemList;
-
 
     public List<Item> getItemList() {
         return itemList;
