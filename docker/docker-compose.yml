@@ -5,4 +5,4 @@ sqlserver:
     - ACCEPT_EULA=Y
     - SA_PASSWORD=Teste!@#
   ports:
-    - 1433:1433
+    - 1434:1433
