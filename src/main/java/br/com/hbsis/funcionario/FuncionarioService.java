@@ -9,10 +9,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class FuncionarioService {
@@ -110,9 +107,15 @@ public class FuncionarioService {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         HttpEntity httpEntity = new HttpEntity(funcionarioDTO,httpHeaders);
         ResponseEntity<EmployeeSalvaDTO> responseEntity = restTemplate.exchange("http://10.2.54.25:9999/api/employees", HttpMethod.POST, httpEntity, EmployeeSalvaDTO.class);
-        funcionarioDTO.setUuid(Objects.requireNonNull(responseEntity.getBody().getEmployeeUuid()));
+        funcionarioDTO.setUuid(Objects.requireNonNull(Objects.requireNonNull(responseEntity.getBody()).getEmployeeUuid()));
         funcionarioDTO.setNome(responseEntity.getBody().getEmployeeName());
     }
+
+    public List<Funcionario> findByFuncionario(){
+       return conexaoFuncionario.findByFuncionarioLista();
+    }
+
+
 }
 
 

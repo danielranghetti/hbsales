@@ -1,1 +1,1 @@
-ALTER TABLE seg_pedidos DROP constraint FK__seg_pedid__id_fu__4EA8A765
+ALTER TABLE seg_pedidos DROP constraint FK__seg_pedid__id_fu__30242045

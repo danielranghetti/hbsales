@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -63,6 +65,16 @@ public class UsuarioService {
 		}
 
 		throw new IllegalArgumentException(String.format("ID %s não existe", id));
+	}
+	public List<Usuario> findUsuario() {
+		List<Usuario> usuarioList = new ArrayList<>();
+
+		try {
+			usuarioList =iUsuarioRepository.findAll();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		return usuarioList;
 	}
 
 	public UsuarioDTO update(UsuarioDTO usuarioDTO, Long id) {

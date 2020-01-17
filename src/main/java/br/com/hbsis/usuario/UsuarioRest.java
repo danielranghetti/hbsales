@@ -5,9 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Classe resposável por receber as requisições externas ao sistema
  */
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioRest {
@@ -20,7 +23,7 @@ public class UsuarioRest {
 		this.usuarioService = usuarioService;
 	}
 
-	@PostMapping
+	@PostMapping("/save")
 	public UsuarioDTO save(@RequestBody UsuarioDTO usuarioDTO) {
 		LOGGER.info("Recebendo solicitação de persistência de usuário...");
 		LOGGER.debug("Payaload: {}", usuarioDTO);
@@ -28,23 +31,28 @@ public class UsuarioRest {
 		return this.usuarioService.save(usuarioDTO);
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping("/findById/{id}")
 	public UsuarioDTO find(@PathVariable("id") Long id) {
 
 		LOGGER.info("Recebendo find by ID... id: [{}]", id);
 
 		return this.usuarioService.findById(id);
 	}
+	@GetMapping("/findUsuarios")
+	public List<Usuario> findUsuarios() {
+		return this.usuarioService.findUsuario();
+	}
 
-	@PutMapping("/{id}")
-	public UsuarioDTO udpate(@PathVariable("id") Long id, @RequestBody UsuarioDTO usuarioDTO) {
+	@PutMapping("/editar/{id}")
+
+		public UsuarioDTO udpate(@PathVariable("id") Long id, @RequestBody UsuarioDTO usuarioDTO) {
 		LOGGER.info("Recebendo Update para Usuário de ID: {}", id);
 		LOGGER.debug("Payload: {}", usuarioDTO);
 
 		return this.usuarioService.update(usuarioDTO, id);
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/delete/{id}")
 	public void delete(@PathVariable("id") Long id) {
 		LOGGER.info("Recebendo Delete para Usuário de ID: {}", id);
 
