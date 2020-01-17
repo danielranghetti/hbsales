@@ -8,7 +8,6 @@ import br.com.hbsis.linhaCategoria.ConexaoLinhaCategoria;
 import br.com.hbsis.linhaCategoria.LinhaCategoria;
 import br.com.hbsis.produto.ConexaoProduto;
 import br.com.hbsis.produto.Produto;
-import br.com.hbsis.produto.ProdutoService;
 import com.opencsv.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -192,7 +190,6 @@ public class CsvProduto {
 
                 if (conexaoFornecedor.existsById(id) && conexaoFornecedor.findByFornecedorCnpj(cnpj).getId().equals(id)) {
                     if (!conexaoCategoria.existsByCodigoCategoria(codigocategoria)) {
-
                         categoria.setNomeCategoria(nomeCategoria);
                         categoria.setCodigoCategoria(codigocategoria);
                         categoria.setFornecedor(conexaoFornecedor.findByFornecedorId(id));

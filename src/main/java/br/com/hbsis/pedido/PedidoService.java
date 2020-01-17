@@ -154,7 +154,6 @@ public class PedidoService {
         if (StringUtils.isEmpty(pedidoDTO.getStatus())) {
             throw new IllegalArgumentException("O status não deve ser nula");
         }
-
         switch (pedidoDTO.getStatus().toUpperCase()) {
             case "ATIVO":
             case "CANCELADO":
