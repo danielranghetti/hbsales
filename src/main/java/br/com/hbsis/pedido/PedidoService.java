@@ -4,6 +4,7 @@ import br.com.hbsis.conexao.InvoiceDTO;
 import br.com.hbsis.ferramentas.Email;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
+import br.com.hbsis.itens.ConexaoItem;
 import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.itens.ItemService;
@@ -36,17 +37,19 @@ public class PedidoService {
     private final ConexaoProduto conexaoProduto;
     private final ConexaoPedido conexaoPedido;
     private final ItemService itemService;
+    private final ConexaoItem conexaoItem;
 
 
 
     private final Email email;
 
-    public PedidoService(FuncionarioService funcionarioService, ConexaoPeriodoVenda conexaoPeriodoVenda, ConexaoProduto conexaoProduto, ConexaoPedido conexaoPedido, ItemService itemService, Email email) {
+    public PedidoService(FuncionarioService funcionarioService, ConexaoPeriodoVenda conexaoPeriodoVenda, ConexaoProduto conexaoProduto, ConexaoPedido conexaoPedido, ItemService itemService, ConexaoItem conexaoItem, Email email) {
         this.funcionarioService = funcionarioService;
         this.conexaoPeriodoVenda = conexaoPeriodoVenda;
         this.conexaoPedido = conexaoPedido;
         this.conexaoProduto = conexaoProduto;
         this.itemService = itemService;
+        this.conexaoItem = conexaoItem;
         this.email = email;
     }
 
@@ -119,10 +122,28 @@ public class PedidoService {
             pedidoExistente.setStatus(pedidoDTO.getStatus().toUpperCase());
 
             pedidoExistente = this.conexaoPedido.save(pedidoExistente);
-            return PedidoDTO.of(pedidoExistente);
+            pedidoExistente.setItemList(parserItem(pedidoDTO.getItemDTOList(), pedidoExistente));
+
+            for (ItemDTO itemDTO : pedidoDTO.getItemDTOList()) {
+                itemDTO.setPedido(pedidoExistente.getId());
+
+                if (conexaoItem.existsProdutosPedidos(conexaoProduto.findByProdutoId(itemDTO.getProduto()), pedidoExistente)) {
+                    itemDTO.setId(conexaoItem.findByProdutosPedidos(conexaoProduto.findByProdutoId(itemDTO.getProduto()), pedidoExistente).getId());
+                    LOGGER.info("alterando itens");
+                    itemService.update(itemDTO, itemDTO.getId());
+                }
+                if (!conexaoItem.existsProdutosPedidos(conexaoProduto.findByProdutoId(itemDTO.getProduto()), pedidoExistente)) {
+                    LOGGER.info("Salvando itens");
+                    itemService.save(itemDTO);
+                }
+
+
+            }
+                return PedidoDTO.of(pedidoExistente);
+            }
+            throw new IllegalArgumentException(String.format("ID %s não existe", id));
         }
-        throw new IllegalArgumentException(String.format("ID %s não existe", id));
-    }
+
 
     public void delete(Long id) {
         LOGGER.info("Executando delete para linha de categoria de ID:[{}]", id);
@@ -154,6 +175,11 @@ public class PedidoService {
         if (StringUtils.isEmpty(pedidoDTO.getStatus())) {
             throw new IllegalArgumentException("O status não deve ser nula");
         }
+//        Pedido pedido = new Pedido();
+//        Item item = new Item();
+//        if (!item.getProduto().getLinhaCategoria().getCategoria().getFornecedor().getId().equals(pedido.getPeriodoVenda().getFornecedor().getId())){
+//            throw new IllegalArgumentException("produto não é do mesmo fornecedor que o periodo de vendas");
+//        }
         switch (pedidoDTO.getStatus().toUpperCase()) {
             case "ATIVO":
             case "CANCELADO":
