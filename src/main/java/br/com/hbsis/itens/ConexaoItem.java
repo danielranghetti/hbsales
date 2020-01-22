@@ -1,6 +1,7 @@
 package br.com.hbsis.itens;
 
 import br.com.hbsis.pedido.Pedido;
+import br.com.hbsis.produto.Produto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +44,20 @@ public class ConexaoItem {
             return itemOptional;
         }
         throw new IllegalArgumentException(String.format("ID %s não existe",id));
+    }
+
+    public  boolean existsProdutosPedidos(Produto produto, Pedido pedido){
+        return iItemRepository.existsByProdutoAndPedido(produto,pedido);
+    }
+    public Item findByProdutosPedidos(Produto produto, Pedido pedido){
+        Optional<Item> itemOptional = this.iItemRepository.findByProdutoAndPedido(produto,pedido);
+        if (itemOptional.isPresent()){
+            return itemOptional.get();
+        }
+        throw new IllegalArgumentException(String.format("pedido e produto %s não existe"));
+    }
+    public  boolean existsId(Long id){
+        return iItemRepository.existsById(id);
     }
 
 
