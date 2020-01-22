@@ -9,6 +9,7 @@ import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
 import br.com.hbsis.itens.ItemService;
 import br.com.hbsis.periodoVenda.ConexaoPeriodoVenda;
+import br.com.hbsis.periodoVenda.PeriodoVenda;
 import br.com.hbsis.produto.ConexaoProduto;
 import br.com.hbsis.produto.Produto;
 import org.apache.commons.lang.StringUtils;
@@ -57,8 +58,9 @@ public class PedidoService {
         Pedido pedido = new Pedido();
         List<Item> itemList = new ArrayList<>();
 
-
         this.validate(pedidoDTO);
+
+
 
         pedido.setCodPedido(pedidoDTO.getCodPedido());
         pedido.setData(pedidoDTO.getDate());
@@ -77,6 +79,7 @@ public class PedidoService {
 
             for (ItemDTO itemDTO : pedidoDTO.getItemDTOList()) {
                 Item item = new Item();
+                this.validaPeriodoPrduto(itemDTO,pedidoDTO);
                 LOGGER.info("Salvando itens");
                 itemDTO.setPedido(pedido.getId());
                 itemService.save(itemDTO);
@@ -175,11 +178,7 @@ public class PedidoService {
         if (StringUtils.isEmpty(pedidoDTO.getStatus())) {
             throw new IllegalArgumentException("O status não deve ser nula");
         }
-//        Pedido pedido = new Pedido();
-//        Item item = new Item();
-//        if (!item.getProduto().getLinhaCategoria().getCategoria().getFornecedor().getId().equals(pedido.getPeriodoVenda().getFornecedor().getId())){
-//            throw new IllegalArgumentException("produto não é do mesmo fornecedor que o periodo de vendas");
-//        }
+
         switch (pedidoDTO.getStatus().toUpperCase()) {
             case "ATIVO":
             case "CANCELADO":
@@ -188,6 +187,17 @@ public class PedidoService {
             default:
                 throw new IllegalArgumentException("Status do produto apenas pode ser: Ativo/Cancelado/Retirado");
         }
+    }
+    private void validaPeriodoPrduto(ItemDTO itemDTO,PedidoDTO pedidoDTO){
+        PeriodoVenda periodoVenda = conexaoPeriodoVenda.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda());
+        Produto produto = conexaoProduto.findByProdutoId(itemDTO.getProduto());
+
+        if (periodoVenda.getFornecedor().getId().equals(produto.getLinhaCategoria().getCategoria().getFornecedor().getId())){
+            LOGGER.info("Produto e Periodo de vendas são do mesmo fornecedor");
+        }else {
+            throw new IllegalArgumentException("Produto pretence a outro fornecedor");
+        }
+
     }
 
     private void validateCan(PedidoDTO pedidoDTO, Long id) {
