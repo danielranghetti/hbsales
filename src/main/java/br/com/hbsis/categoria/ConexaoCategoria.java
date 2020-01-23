@@ -18,15 +18,8 @@ public class ConexaoCategoria {
         this.iCategoriaRepository = iCategoriaRepository;
     }
 
-    public boolean existsByNomeCategoria(String nomeCategoria){
-        return iCategoriaRepository.existsByNomeCategoria(nomeCategoria);
-    }
 
-    public  boolean existsCategoriaProdutoByFornecedorId(Long id){
-        return iCategoriaRepository.existsCategoriaProdutoByFornecedorId(id);
-    }
-
-    public boolean existsByCodigoCategoria (String codigoCategoria){
+    public boolean existsByCodigoCategoria(String codigoCategoria) {
         return iCategoriaRepository.existsByCodigoCategoria(codigoCategoria);
     }
 
@@ -67,11 +60,11 @@ public class ConexaoCategoria {
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
-    public void deletePorId(Long id){
+    public void deletePorId(Long id) {
         this.iCategoriaRepository.deleteById(id);
     }
 
-    public Categoria save(Categoria categoria){
+    public Categoria save(Categoria categoria) {
         try {
             categoria = iCategoriaRepository.save(categoria);
         } catch (Exception e) {
@@ -85,7 +78,7 @@ public class ConexaoCategoria {
         return iCategoriaRepository.saveAll(categoria);
     }
 
-    public List<Categoria> findAll(){
+    public List<Categoria> findAll() {
         List<Categoria> categoriaList = new ArrayList<>();
         try {
             categoriaList = iCategoriaRepository.findAll();
@@ -96,7 +89,7 @@ public class ConexaoCategoria {
 
     }
 
-     public List<Categoria>  findByFornecedor(Fornecedor fornecedor){
+    public List<Categoria> findByFornecedor(Fornecedor fornecedor) {
         List<Categoria> categorias = new ArrayList<>();
         try {
             categorias = iCategoriaRepository.findByFornecedor(fornecedor);
@@ -104,5 +97,22 @@ public class ConexaoCategoria {
             e.printStackTrace();
         }
         return categorias;
-     }
+    }
+
+    public void updateCodigoCategoriaPorCnpj(Fornecedor fornecedor) {
+        try {
+            List<Categoria> categoriaList = iCategoriaRepository.findByFornecedor(fornecedor);
+            for (Categoria categoria : categoriaList) {
+                categoria.setNomeCategoria(categoria.getNomeCategoria());
+                categoria.setFornecedor(fornecedor);
+                String cnpj = categoria.getFornecedor().getCnpj();
+                String ultDig = cnpj.substring(cnpj.length() - 4);
+                categoria.setCodigoCategoria(categoria.getCodigoCategoria().replace(categoria.getCodigoCategoria().substring(3, 7), ultDig));
+                this.iCategoriaRepository.save(categoria);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
+

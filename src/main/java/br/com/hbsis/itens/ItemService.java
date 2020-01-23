@@ -1,7 +1,6 @@
 package br.com.hbsis.itens;
 
 import br.com.hbsis.pedido.ConexaoPedido;
-import br.com.hbsis.pedido.PedidoService;
 import br.com.hbsis.produto.ConexaoProduto;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

@@ -16,34 +16,47 @@ public class ConexaoFuncionario {
     public ConexaoFuncionario(IFuncionarioRepository iFuncionarioRepository) {
         this.iFuncionarioRepository = iFuncionarioRepository;
     }
-    public  Funcionario save(Funcionario funcionario){
+
+    public Funcionario save(Funcionario funcionario) {
         try {
             funcionario = iFuncionarioRepository.save(funcionario);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return funcionario;
     }
-    public void deletePorId(Long id){
+
+    public void deletePorId(Long id) {
         this.iFuncionarioRepository.deleteById(id);
     }
-    public Optional<Funcionario> findById(Long id){
+
+    public Optional<Funcionario> findById(Long id) {
         Optional<Funcionario> funcionarioOptional = iFuncionarioRepository.findById(id);
-        if (funcionarioOptional.isPresent()){
+        if (funcionarioOptional.isPresent()) {
             return funcionarioOptional;
         }
-        throw new IllegalArgumentException(String.format("ID %s não existe",id));
+        throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
-    public List<Funcionario> findByFuncionarioLista(){
+
+    public List<Funcionario> findByFuncionarioLista() {
         List<Funcionario> funcionarioList = new ArrayList<>();
         try {
             funcionarioList = iFuncionarioRepository.findAll();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return funcionarioList;
     }
 
+    public Funcionario findByFuncionarioId(Long id) {
+        Optional<Funcionario> funcionarioOptional = this.iFuncionarioRepository.findById(id);
+
+        if (funcionarioOptional.isPresent()) {
+            return funcionarioOptional.get();
+        }
+
+        throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
 
 
 }

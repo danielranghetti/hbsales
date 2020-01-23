@@ -2,8 +2,8 @@ package br.com.hbsis.pedido;
 
 import br.com.hbsis.conexao.InvoiceDTO;
 import br.com.hbsis.ferramentas.Email;
+import br.com.hbsis.funcionario.ConexaoFuncionario;
 import br.com.hbsis.funcionario.Funcionario;
-import br.com.hbsis.funcionario.FuncionarioService;
 import br.com.hbsis.itens.ConexaoItem;
 import br.com.hbsis.itens.Item;
 import br.com.hbsis.itens.ItemDTO;
@@ -33,19 +33,16 @@ public class PedidoService {
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidoService.class);
-    private final FuncionarioService funcionarioService;
+    private final ConexaoFuncionario conexaoFuncionario;
     private final ConexaoPeriodoVenda conexaoPeriodoVenda;
     private final ConexaoProduto conexaoProduto;
     private final ConexaoPedido conexaoPedido;
     private final ItemService itemService;
     private final ConexaoItem conexaoItem;
-
-
-
     private final Email email;
 
-    public PedidoService(FuncionarioService funcionarioService, ConexaoPeriodoVenda conexaoPeriodoVenda, ConexaoProduto conexaoProduto, ConexaoPedido conexaoPedido, ItemService itemService, ConexaoItem conexaoItem, Email email) {
-        this.funcionarioService = funcionarioService;
+    public PedidoService(ConexaoFuncionario conexaoFuncionario, ConexaoPeriodoVenda conexaoPeriodoVenda, ConexaoProduto conexaoProduto, ConexaoPedido conexaoPedido, ItemService itemService, ConexaoItem conexaoItem, Email email) {
+        this.conexaoFuncionario = conexaoFuncionario;
         this.conexaoPeriodoVenda = conexaoPeriodoVenda;
         this.conexaoPedido = conexaoPedido;
         this.conexaoProduto = conexaoProduto;
@@ -61,37 +58,29 @@ public class PedidoService {
         this.validate(pedidoDTO);
 
 
-
         pedido.setCodPedido(pedidoDTO.getCodPedido());
         pedido.setData(pedidoDTO.getDate());
         pedido.setId(pedidoDTO.getId());
-        pedido.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
+        pedido.setFuncionario(conexaoFuncionario.findByFuncionarioId(pedidoDTO.getFuncionario()));
         pedido.setPeriodoVenda(conexaoPeriodoVenda.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
         pedido.setStatus(pedidoDTO.getStatus().toUpperCase());
-
-
 
         if (invoiceValidarPedido(pedido.getPeriodoVenda().getFornecedor().getCnpj(), pedido.getFuncionario().getUuid(), parserItem(pedidoDTO.getItemDTOList(), pedido), totalValue(pedidoDTO.getItemDTOList()))) {
 
             pedido = this.conexaoPedido.save(pedido);
-            pedido.setItemList(parserItem(pedidoDTO.getItemDTOList(),pedido));
-
-
+            pedido.setItemList(parserItem(pedidoDTO.getItemDTOList(), pedido));
             for (ItemDTO itemDTO : pedidoDTO.getItemDTOList()) {
                 Item item = new Item();
-                this.validaPeriodoPrduto(itemDTO,pedidoDTO);
+                this.validaPeriodoPrduto(itemDTO, pedidoDTO);
                 LOGGER.info("Salvando itens");
                 itemDTO.setPedido(pedido.getId());
                 itemService.save(itemDTO);
                 item.setQuantidade(itemDTO.getQuantidade());
                 item.setProduto(conexaoProduto.findByProdutoId(itemDTO.getProduto()));
                 itemList.add(item);
-
             }
-
-
             LOGGER.info("Enviando e-mail");
-            email.enviarEmailDataRetirada(pedido,itemList);
+            email.enviarEmailDataRetirada(pedido, itemList);
             LOGGER.info("E-mail enviado com sucesso");
 
         }
@@ -119,11 +108,9 @@ public class PedidoService {
             LOGGER.debug("Pedido existente:{}", pedidoExistente);
 
             pedidoExistente.setData(LocalDate.now());
-            pedidoExistente.setFuncionario(funcionarioService.findByFuncionarioId(pedidoDTO.getFuncionario()));
+            pedidoExistente.setFuncionario(conexaoFuncionario.findByFuncionarioId(pedidoDTO.getFuncionario()));
             pedidoExistente.setPeriodoVenda(conexaoPeriodoVenda.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda()));
-
             pedidoExistente.setStatus(pedidoDTO.getStatus().toUpperCase());
-
             pedidoExistente = this.conexaoPedido.save(pedidoExistente);
             pedidoExistente.setItemList(parserItem(pedidoDTO.getItemDTOList(), pedidoExistente));
 
@@ -139,13 +126,11 @@ public class PedidoService {
                     LOGGER.info("Salvando itens");
                     itemService.save(itemDTO);
                 }
-
-
             }
-                return PedidoDTO.of(pedidoExistente);
-            }
-            throw new IllegalArgumentException(String.format("ID %s não existe", id));
+            return PedidoDTO.of(pedidoExistente);
         }
+        throw new IllegalArgumentException(String.format("ID %s não existe", id));
+    }
 
 
     public void delete(Long id) {
@@ -188,13 +173,14 @@ public class PedidoService {
                 throw new IllegalArgumentException("Status do produto apenas pode ser: Ativo/Cancelado/Retirado");
         }
     }
-    private void validaPeriodoPrduto(ItemDTO itemDTO,PedidoDTO pedidoDTO){
+
+    private void validaPeriodoPrduto(ItemDTO itemDTO, PedidoDTO pedidoDTO) {
         PeriodoVenda periodoVenda = conexaoPeriodoVenda.findByPeriodoVendaId(pedidoDTO.getPeriodoVenda());
         Produto produto = conexaoProduto.findByProdutoId(itemDTO.getProduto());
 
-        if (periodoVenda.getFornecedor().getId().equals(produto.getLinhaCategoria().getCategoria().getFornecedor().getId())){
+        if (periodoVenda.getFornecedor().getId().equals(produto.getLinhaCategoria().getCategoria().getFornecedor().getId())) {
             LOGGER.info("Produto e Periodo de vendas são do mesmo fornecedor");
-        }else {
+        } else {
             throw new IllegalArgumentException("Produto pretence a outro fornecedor");
         }
 
@@ -270,7 +256,7 @@ public class PedidoService {
 
     public List<PedidoDTO> findAllByFornecedorId(Long id) {
         Funcionario funcionario;
-        funcionario = funcionarioService.findByFuncionarioId(id);
+        funcionario = conexaoFuncionario.findByFuncionarioId(id);
 
         List<Pedido> pedidos;
         pedidos = conexaoPedido.findByFuncionario(funcionario);
@@ -344,9 +330,9 @@ public class PedidoService {
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
-    public double totalValue(List<ItemDTO> itemDTOS){
+    public double totalValue(List<ItemDTO> itemDTOS) {
         double valorTotal = 0;
-        for (ItemDTO itemDTO : itemDTOS){
+        for (ItemDTO itemDTO : itemDTOS) {
             Produto produto = new Produto();
             produto.getPreco();
             valorTotal += (produto.getPreco() * itemDTO.getQuantidade());
@@ -354,9 +340,9 @@ public class PedidoService {
         return valorTotal;
     }
 
-    private List<Item> parserItem(List<ItemDTO> itemDTOS, Pedido pedido){
+    private List<Item> parserItem(List<ItemDTO> itemDTOS, Pedido pedido) {
         List<Item> items = new ArrayList<>();
-        for (ItemDTO itemDTO : itemDTOS){
+        for (ItemDTO itemDTO : itemDTOS) {
             Item item = new Item();
             item.setPedido(pedido);
             item.setQuantidade(itemDTO.getQuantidade());
