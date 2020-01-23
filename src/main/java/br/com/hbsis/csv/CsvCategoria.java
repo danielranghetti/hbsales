@@ -1,7 +1,6 @@
 package br.com.hbsis.csv;
 
 import br.com.hbsis.categoria.Categoria;
-import br.com.hbsis.categoria.CategoriaService;
 import br.com.hbsis.categoria.ConexaoCategoria;
 import br.com.hbsis.ferramentas.MascaraCnpj;
 import br.com.hbsis.fornecedor.ConexaoFornecedor;
@@ -26,15 +25,13 @@ public class CsvCategoria {
 
 
     private final MascaraCnpj mascaraCnpj;
-    private final CategoriaService categoriaService;
     private final ConexaoFornecedor conexaoFornecedor;
     private final ConexaoCategoria conexaoCategoria;
 
 
     @Autowired
-    public CsvCategoria(MascaraCnpj mascaraCnpj, CategoriaService categoriaService, ConexaoFornecedor conexaoFornecedor, ConexaoCategoria conexaoCategoria) {
+    public CsvCategoria(MascaraCnpj mascaraCnpj, ConexaoFornecedor conexaoFornecedor, ConexaoCategoria conexaoCategoria) {
         this.mascaraCnpj = mascaraCnpj;
-        this.categoriaService = categoriaService;
         this.conexaoFornecedor = conexaoFornecedor;
         this.conexaoCategoria = conexaoCategoria;
     }
@@ -106,7 +103,7 @@ public class CsvCategoria {
 
     public void importFromCsv(MultipartFile file) throws Exception {
         List<Categoria> categorias = this.csvToCategoria(file);
-        categoriaService.saveAll(categorias);
+        conexaoCategoria.saveAll(categorias);
     }
 
 }

@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -17,16 +16,10 @@ public class CategoriaService {
     private final ConexaoCategoria conexaoCategoria;
     private final ConexaoFornecedor conexaoFornecedor;
 
-
     public CategoriaService(ConexaoCategoria conexaoCategoria, ConexaoFornecedor conexaoFornecedor) {
         this.conexaoCategoria = conexaoCategoria;
         this.conexaoFornecedor = conexaoFornecedor;
 
-    }
-
-    public List<Categoria> saveAll(List<Categoria> categoria) throws Exception {
-
-        return conexaoCategoria.saveAll(categoria);
     }
 
     public CategoriaDTO save(CategoriaDTO categoriaDTO) {

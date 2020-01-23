@@ -23,12 +23,12 @@ public class FuncionarioService {
 
     }
 
-    public  FuncionarioDTO save(FuncionarioDTO funcionarioDTO){
+    public FuncionarioDTO save(FuncionarioDTO funcionarioDTO) {
 
         this.validate(funcionarioDTO);
 
         LOGGER.info("Salvando Funcionário");
-        LOGGER.debug("Funcionario: {}",funcionarioDTO);
+        LOGGER.debug("Funcionario: {}", funcionarioDTO);
 
         Funcionario funcionario = new Funcionario();
 
@@ -41,48 +41,39 @@ public class FuncionarioService {
         return funcionarioDTO.of(funcionario);
     }
 
-    private void validate(FuncionarioDTO funcionarioDTO){
+    private void validate(FuncionarioDTO funcionarioDTO) {
 
         LOGGER.info("Validando Funcionário");
 
-        if (funcionarioDTO == null){
-            throw new  IllegalArgumentException("FuncionarioDTO não deve ser nulo");
+        if (funcionarioDTO == null) {
+            throw new IllegalArgumentException("FuncionarioDTO não deve ser nulo");
         }
-        if (StringUtils.isEmpty(funcionarioDTO.getNome())){
+        if (StringUtils.isEmpty(funcionarioDTO.getNome())) {
             throw new IllegalArgumentException("O nome do funcionário não deve ser nulo");
         }
-        if (StringUtils.isEmpty(funcionarioDTO.geteMail())){
-            throw new  IllegalArgumentException("O e-mail não deve ser nulo");
+        if (StringUtils.isEmpty(funcionarioDTO.geteMail())) {
+            throw new IllegalArgumentException("O e-mail não deve ser nulo");
         }
         hbEmployeeValidarFuncionario(funcionarioDTO);
-        if (StringUtils.isEmpty(funcionarioDTO.getUuid())){
+        if (StringUtils.isEmpty(funcionarioDTO.getUuid())) {
             throw new IllegalArgumentException("UUID do funcionário não deve ser nulo");
         }
     }
-    public  FuncionarioDTO findById(Long id){
-        Optional<Funcionario>funcionarioOptional = this.conexaoFuncionario.findById(id);
 
-        if (funcionarioOptional.isPresent()){
-            return  FuncionarioDTO.of(funcionarioOptional.get());
-        }
-        throw new IllegalArgumentException(String.format("ID %s não existe", id));
-    }
-
-    public Funcionario findByFuncionarioId(Long id) {
+    public FuncionarioDTO findById(Long id) {
         Optional<Funcionario> funcionarioOptional = this.conexaoFuncionario.findById(id);
 
         if (funcionarioOptional.isPresent()) {
-            return funcionarioOptional.get();
+            return FuncionarioDTO.of(funcionarioOptional.get());
         }
-
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
 
-    public FuncionarioDTO update(FuncionarioDTO funcionarioDTO, Long id){
+    public FuncionarioDTO update(FuncionarioDTO funcionarioDTO, Long id) {
 
         Optional<Funcionario> funcionarioExistenteOptional = this.conexaoFuncionario.findById(id);
 
-        if (funcionarioExistenteOptional.isPresent()){
+        if (funcionarioExistenteOptional.isPresent()) {
             Funcionario funcionarioExistente = funcionarioExistenteOptional.get();
             LOGGER.info("Atualizando funcionário ... id:[{}]", funcionarioExistente.getId());
             LOGGER.debug("Payload: {}", funcionarioDTO);
@@ -96,23 +87,25 @@ public class FuncionarioService {
         }
         throw new IllegalArgumentException(String.format("ID %s não existe", id));
     }
-    public  void delete(Long id){
+
+    public void delete(Long id) {
         LOGGER.info("Executenado o delete para funcionário de ID: [{}]", id);
         this.conexaoFuncionario.deletePorId(id);
     }
-    private void hbEmployeeValidarFuncionario(FuncionarioDTO funcionarioDTO){
+
+    private void hbEmployeeValidarFuncionario(FuncionarioDTO funcionarioDTO) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Authorization","f5a00604-1b67-11ea-978f-2e728ce88125");
+        httpHeaders.add("Authorization", "f5a00604-1b67-11ea-978f-2e728ce88125");
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        HttpEntity httpEntity = new HttpEntity(funcionarioDTO,httpHeaders);
+        HttpEntity httpEntity = new HttpEntity(funcionarioDTO, httpHeaders);
         ResponseEntity<EmployeeSalvaDTO> responseEntity = restTemplate.exchange("http://10.2.54.25:9999/api/employees", HttpMethod.POST, httpEntity, EmployeeSalvaDTO.class);
         funcionarioDTO.setUuid(Objects.requireNonNull(Objects.requireNonNull(responseEntity.getBody()).getEmployeeUuid()));
         funcionarioDTO.setNome(responseEntity.getBody().getEmployeeName());
     }
 
-    public List<Funcionario> findByFuncionario(){
-       return conexaoFuncionario.findByFuncionarioLista();
+    public List<Funcionario> findByFuncionario() {
+        return conexaoFuncionario.findByFuncionarioLista();
     }
 
 
