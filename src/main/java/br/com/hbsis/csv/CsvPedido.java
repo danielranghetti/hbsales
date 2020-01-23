@@ -1,6 +1,7 @@
 package br.com.hbsis.csv;
 
 import br.com.hbsis.ferramentas.MascaraCnpj;
+import br.com.hbsis.funcionario.ConexaoFuncionario;
 import br.com.hbsis.funcionario.Funcionario;
 import br.com.hbsis.funcionario.FuncionarioService;
 import br.com.hbsis.itens.ConexaoItem;
@@ -24,16 +25,16 @@ import java.util.List;
 public class CsvPedido {
     private final ConexaoPedido conexaoPedido;
     private final ConexaoPeriodoVenda conexaoPeriodoVenda;
-    private final FuncionarioService funcionarioService;
+    private final ConexaoFuncionario conexaoFuncionario;
     private final MascaraCnpj mascaraCnpj;
     private final ConexaoItem conexaoItem;
 
     @Autowired
-    public CsvPedido(ConexaoPedido conexaoPedido, ConexaoPeriodoVenda conexaoPeriodoVenda, FuncionarioService funcionarioService,
-                     MascaraCnpj mascaraCnpj, ConexaoItem conexaoItem) {
+    public CsvPedido(ConexaoPedido conexaoPedido, ConexaoPeriodoVenda conexaoPeriodoVenda,
+                     ConexaoFuncionario conexaoFuncionario, MascaraCnpj mascaraCnpj, ConexaoItem conexaoItem) {
         this.conexaoPedido = conexaoPedido;
         this.conexaoPeriodoVenda = conexaoPeriodoVenda;
-        this.funcionarioService = funcionarioService;
+        this.conexaoFuncionario = conexaoFuncionario;
         this.mascaraCnpj = mascaraCnpj;
         this.conexaoItem = conexaoItem;
 
@@ -76,7 +77,7 @@ public class CsvPedido {
         icsvWriter.writeNext(ecreveCsv);
 
         Funcionario funcionario;
-        funcionario = funcionarioService.findByFuncionarioId(id);
+        funcionario = conexaoFuncionario.findByFuncionarioId(id);
         List<Item> items;
         List<Pedido> pedidos;
 
